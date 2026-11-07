@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mesh-refinement"
+version = "0.1.0"
+description = "Paper code for orientation-aware duplicate-vertex refinement of rigged meshes"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = ["numpy>=1.24", "scipy>=1.10"]
+license = {file = "LICENSE"}
+# Author metadata and paper citation are not yet specified.
+
+[project.urls]
+Repository = "https://github.com/Budy123/Deformation-Aware-Mesh-Refinement"
+
+[project.scripts]
+mesh-refinement = "mesh_refinement.cli:main"
+
+[tool.setuptools]
+packages = ["mesh_refinement"]
+
+[tool.setuptools.data-files]
+"share/mesh-refinement" = ["README.md", "LICENSE", "NOTICE.md", "SOURCE_PROVENANCE.json"]
+"share/mesh-refinement/licenses" = ["licenses/Puppeteer-APACHE-2.0.txt"]

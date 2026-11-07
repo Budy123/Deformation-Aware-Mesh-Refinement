@@ -1,0 +1,53 @@
+{
+  "extraction_date": "2026-11-05",
+  "root_commit": "0e29ee6d3d74581b44c07b309ee6fda221a5509b",
+  "production_commit": "944757ba63869a08acaaeb3186fafd94f9bfd656",
+  "notes": "Local release preparation, not an upstream official release. Extracted functions are preserved verbatim; public wrappers add validation and paper defaults. Original source paths are relative historical identifiers, not runtime dependencies.",
+  "sources": [
+    {
+      "source": "Rig/Puppeteer/skinning_weight_fusion.py",
+      "sha256": "2d72816438493cc3fed192461f04938e521a551b57f8960ee448a83ab16506c3",
+      "target": "mesh_refinement/fusion.py",
+      "mode": "unchanged complete module",
+      "source_commit": "944757ba63869a08acaaeb3186fafd94f9bfd656",
+      "verified_git_blob": "a345a083e5fb964e897324edfa1c1cbaa1d094ac"
+    },
+    {
+      "source": "Rig/Puppeteer/export_articulation_xl2_gt_dedup_incident_face.py",
+      "sha256": "ba1dcc835d07b309f580e65c36eb6baa06aa6c5c25cd25e061ffdd38cd7d80e6",
+      "target": "mesh_refinement/_topology.py",
+      "functions": [
+        "_position_groups",
+        "_position_group_ids",
+        "_canonical_cyclic_face_key",
+        "_face_geom_key_and_orientation",
+        "_compute_incident_face_normals",
+        "_min_incident_face_angle_deg",
+        "_has_reverse_face_conflict",
+        "_partition_pairwise_compatible_groups",
+        "_finalize_mesh_output",
+        "dedup_vertices_with_gt_skin_incident_face_threshold"
+      ],
+      "source_commit": "944757ba63869a08acaaeb3186fafd94f9bfd656",
+      "verified_git_blob": "845872fbad1fc45a4a84fc9bed7b6f08a67a2b55"
+    },
+    {
+      "source": "ours/APF/mesh_refinement_metrics/analyze_mesh_refinement_surface_metrics.py",
+      "sha256": "9aca38b01088926af7f227b49f3c4dc9b5d108e17abdfceebecd7e4091c530e8",
+      "target": "mesh_refinement/_metric_kernels.py",
+      "functions": [
+        "_axis_angle_to_matrix_batch",
+        "_sample_unirig_style_pose_basis",
+        "_compose_pose_matrix",
+        "_linear_blend_skinning_np",
+        "_sample_pose_matrices",
+        "_unirig_vertex_loss_for_skin_pair",
+        "_normalize_skin_rows",
+        "_skin_l1_for_skin_pair",
+        "_non_manifold_edge_count_python",
+        "_nearest_neighbor_query"
+      ],
+      "functions_match_root_commit": true
+    }
+  ]
+}

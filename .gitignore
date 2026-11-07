@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+*.npz
+*.npy
+*.log
+.venv/
+build/
+dist/
+*.egg-info/
+# Keep the standalone release complete even inside the research root's broad
+# ignores for text, JSON and test files.
+!requirements.txt
+!SOURCE_PROVENANCE.json
+!licenses/*.txt
+!tests/test_*.py
