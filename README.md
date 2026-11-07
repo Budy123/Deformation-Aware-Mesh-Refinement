@@ -1,4 +1,12 @@
-# Deformation-Aware-Mesh-Refinement
+<div align="center">
+
+<h1>Deformation-Aware Mesh Refinement</h1>
+
+<p>Orientation-aware duplicate-vertex refinement for rigged triangle meshes.</p>
+
+<p><a href="#installation">Installation</a> · <a href="#quick-start">Quick start</a> · <a href="#refinement-and-evaluation">Refinement and evaluation</a> · <a href="LICENSE">Apache 2.0</a></p>
+
+</div>
 
 Standalone code for refining duplicate-position vertices in rigged triangle
 meshes. It does not import Puppeteer, APF, Blender, PyTorch, or private data
@@ -18,27 +26,62 @@ weights; it does **not** predict or repredict them. Dataset-wide adapters and
 Blender/[11] baseline implementations are not bundled. The example validates the
 pipeline, not the published dataset averages.
 
-## Environment
+## Method
+
+The refinement pipeline has three stages:
+
+1. **Surface orientation partitioning.** Group vertices at exactly the same
+   position, then partition each group using incident-face compatibility.
+   Opposite-facing duplicate surfaces are kept separate.
+2. **Skinning-weight fusion.** Normalize the valid skinning-weight rows in each
+   subgroup and fuse them using KDE-based weighting. Uniform averaging is
+   available as a baseline.
+3. **Vertex merging and face removal.** Merge vertices within each subgroup,
+   remap the faces, remove collapsed and duplicate faces based on vertex indices,
+   and retain mappings to the original vertices.
+
+Refinement does not move vertex positions or modify the skeleton. See
+[Limits](#limits) for the treatment of opposite surface layers and attributes.
+
+## Installation
 
 Verified locally with Python 3.8.10, NumPy 1.24.4 and SciPy 1.10.1. Core refinement
 needs only NumPy; SciPy supplies the float64 KD-tree used for vertex CD. Exact
 SciPy/NumPy pins are provided in `requirements.txt` as the tested environment,
 not a claim that only those versions work. No dependency is downloaded at runtime.
 
-In your Python environment, install the tested dependencies with
-`python -m pip install -r requirements.txt`.
+A CPU is sufficient; CUDA, PyTorch and pretrained model weights are not required.
+Use Python 3.8 for the pinned environment below.
 
-Run all commands below from this directory. No installation of this package is
-required:
+```bash
+git clone https://github.com/Budy123/Deformation-Aware-Mesh-Refinement.git
+cd Deformation-Aware-Mesh-Refinement
+python3.8 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+python -m pip install .
+```
+
+Your Python installation must provide `venv` and `pip`. If a minimal Python
+installation reports that `ensurepip` is unavailable, prepare a Python 3.8
+environment with pip before continuing; this is an environment setup issue.
+An existing Python 3.8 environment can also be used without creating `.venv`.
+
+The last command installs the package and its `mesh-refinement` console command.
+Package metadata declares minimum runtime dependencies; `requirements.txt`
+selects the tested versions.
+
+Check the installation from the repository directory:
 
 ```bash
 python -m unittest discover -s tests -v
 python -m mesh_refinement --help
 ```
 
-To install the package and its `mesh-refinement` console command, run
-`python -m pip install .`. Package metadata declares minimum runtime
-dependencies; use `requirements.txt` to select the tested versions.
+The package was also tested after installation from outside the source
+directory. Both the source and installed-package suites passed all 22 tests
+with the versions listed above. These are functional checks, not a reproduction
+of the full-dataset paper results.
 
 ## Quick start
 
@@ -55,7 +98,37 @@ python -m mesh_refinement evaluate \
   --output /tmp/mesh-refinement-example/metrics.json
 ```
 
-## Input contract
+This synthetic example needs no dataset download. It produces a refined mesh
+and a JSON report with Skin L1, DE, FPR, CD and NME. The output files are numeric
+NPZ and JSON files, not rendered images or FBX assets.
+
+## Refinement and evaluation
+
+After preparing your own `input.npz` as described below, run:
+
+```bash
+# Our refinement with KDE-based fusion.
+mesh-refinement refine --input input.npz --output refined.npz
+
+# Evaluate against the original ground-truth weights and skeleton.
+mesh-refinement evaluate --input input.npz --refined refined.npz --output metrics.json
+
+# Uniform-averaging baseline; all other refinement settings are unchanged.
+mesh-refinement refine --input input.npz --output mean.npz --fusion mean
+mesh-refinement evaluate --input input.npz --refined mean.npz --output mean_metrics.json
+```
+
+`refine` needs geometry and input skinning weights, but not ground-truth weights.
+`evaluate` additionally needs `gt_skin`; DE requires both skeleton fields below.
+Without a skeleton, the other metrics are still evaluated and DE is `null`.
+All output paths must be new; existing files are never overwritten.
+
+## Data preparation
+
+Prepare a numeric NPZ containing the arrays below. Dataset files and pretrained
+skinning predictions are not bundled. The public interface starts from vertex,
+face and skinning-weight arrays; it does not load FBX files or run a skinning
+prediction model.
 
 NPZ files must contain numeric arrays; they are loaded with `allow_pickle=False`.
 Object-array dataset archives must first be converted using trusted dataset
@@ -185,3 +258,30 @@ vertex normals are not preserved/remapped by this numeric interface. Vertex
 coordinates are not optimized; skeleton topology/transforms are not refined.
 
 See [SOURCE_PROVENANCE.json](SOURCE_PROVENANCE.json) for the source versions.
+
+## Code structure
+
+- [mesh_refinement/core.py](mesh_refinement/core.py): validated refinement API
+  and paper-default configuration.
+- [mesh_refinement/_topology.py](mesh_refinement/_topology.py) and
+  [mesh_refinement/fusion.py](mesh_refinement/fusion.py): partitioning, merging,
+  face removal and skinning-weight fusion.
+- [mesh_refinement/metrics.py](mesh_refinement/metrics.py): metric evaluation.
+- [mesh_refinement/cli.py](mesh_refinement/cli.py): NPZ refinement and evaluation
+  commands.
+- [examples/make_example.py](examples/make_example.py): self-contained synthetic
+  input generator.
+- [tests/test_release.py](tests/test_release.py): regression and CLI tests.
+
+## Acknowledgements and license
+
+This standalone release was extracted from our research pipeline built around
+[Puppeteer](https://github.com/Seed3D/Puppeteer). The evaluation follows the
+recorded [UniRig](https://github.com/VAST-AI-Research/UniRig)-style skinning and
+pose-sampling conventions, with the metric definitions documented above.
+Neither project is a runtime dependency of this package.
+
+The code is released under [Apache 2.0](LICENSE). See [NOTICE.md](NOTICE.md),
+[SOURCE_PROVENANCE.json](SOURCE_PROVENANCE.json), and the preserved
+[upstream license](licenses/Puppeteer-APACHE-2.0.txt) for attribution and source
+details.
