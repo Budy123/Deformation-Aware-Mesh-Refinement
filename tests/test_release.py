@@ -8,7 +8,7 @@ import unittest
 import numpy as np
 
 from mesh_refinement import evaluate_mesh, fuse_skinning_weights, paper_fusion_config, refine_mesh
-from mesh_refinement._topology import _partition_pairwise_compatible_groups
+from mesh_refinement._topology import _partition_pairwise_compatible_groups, _position_groups
 from mesh_refinement.fusion import SkinningFusionConfig
 
 
@@ -22,8 +22,42 @@ def fixture():
 class CoreTest(unittest.TestCase):
     def test_paper_defaults(self):
         c = paper_fusion_config()
-        self.assertEqual((c.policy, c.self_included, c.bandwidth_mode, c.adaptive_scale),
-                         ("gaussian_l2", True, "group_rms", 0.5))
+        self.assertEqual(c, SkinningFusionConfig(policy="gaussian_l2", adaptive_scale=0.5))
+
+    def test_position_groups_keep_first_seen_order(self):
+        vertices = np.array([[2, 0, 0], [0, 0, 0], [2, 0, 0], [1, 0, 0], [0, 0, 0]])
+        groups, position_ids = _position_groups(vertices)
+        self.assertEqual(groups, [[0, 2], [1, 4]])
+        np.testing.assert_array_equal(position_ids, [0, 1, 0, 2, 1])
+
+    def test_kde_and_mean_configs(self):
+        v, f, w = fixture()
+        v = np.concatenate([v, v[:1]])
+        f = np.concatenate([f, [[4, 2, 3]]])
+        w = np.concatenate([w, np.array([[0.3, 0.7]], dtype=np.float32)])
+        configs = [SkinningFusionConfig(policy="uniform"), paper_fusion_config(),
+                   SkinningFusionConfig(adaptive_scale=0.8)]
+        for config in configs:
+            with self.subTest(config=config):
+                expected = fuse_skinning_weights(w[[0, 1, 4]], config=config).fused_skin
+                actual = refine_mesh(v, f, w, fusion_config=config)["evaluation"]["skin"][0]
+                np.testing.assert_array_equal(actual, expected)
+
+    def test_legacy_fusion_options_are_rejected(self):
+        for option, value in [("self_included", False), ("bandwidth_mode", "fixed"),
+                              ("bandwidth", 0.1), ("adaptive_bandwidth_floor", 1e-6)]:
+            with self.subTest(option=option), self.assertRaises(TypeError):
+                SkinningFusionConfig(**{option: value})
+        for value in (0, -1, float("nan"), float("inf")):
+            with self.subTest(scale=value), self.assertRaises(ValueError):
+                refine_mesh(*fixture(), fusion_config=SkinningFusionConfig(adaptive_scale=value))
+
+    def test_zero_dispersion_remains_finite(self):
+        rows = np.array([[0.8, 0.2], [0.8, 0.2], [0.8, 0.2]])
+        result = fuse_skinning_weights(rows, config=paper_fusion_config())
+        np.testing.assert_allclose(result.fused_skin, rows[0])
+        self.assertEqual(result.bandwidth, 1e-12)
+        self.assertTrue(np.isfinite(result.coefficients).all())
 
     def test_two_vertices_mean_and_cleanup(self):
         v, f, w = fixture()
@@ -53,6 +87,26 @@ class CoreTest(unittest.TestCase):
         self.assertEqual(r["merge_groups"], [])
         self.assertEqual(r["protected_pairs_reverse_face"], [[0, 1]])
         self.assertEqual(len(r["evaluation"]["faces"]), 2)
+
+    def test_coincident_face_vertex_orders(self):
+        base = np.array([[0.1, 0.2, 0.3], [1.3, 0.5, -0.2], [-0.4, 1.7, 0.8]])
+        vertices = np.concatenate([base, base])
+        skin = np.ones((6, 1), dtype=np.float32)
+        same = [(0, 1, 2), (1, 2, 0), (2, 0, 1)]
+        opposite = [(0, 2, 1), (2, 1, 0), (1, 0, 2)]
+        for order in same + opposite:
+            with self.subTest(order=order):
+                faces = np.array([[0, 1, 2], np.array(order) + 3])
+                result = refine_mesh(vertices, faces, skin)
+                self.assertEqual(bool(result["protected_pairs_reverse_face"]), order in opposite)
+                self.assertEqual(len(result["merge_groups"]), 0 if order in opposite else 3)
+
+    def test_noncoincident_faces_do_not_block_by_normal_angle(self):
+        vertices = np.array([[0, 0, 0], [0, 0, 0], [1, 0, 0], [0, 1, 0], [2, 0, 0]])
+        faces = np.array([[0, 2, 3], [1, 3, 4]])
+        result = refine_mesh(vertices, faces, np.ones((5, 1), dtype=np.float32))
+        self.assertEqual(result["merge_groups"], [[0, 1]])
+        self.assertEqual(result["protected_pairs_reverse_face"], [])
 
     def test_missing_incident_normal_is_not_merged(self):
         v, f, w = fixture()
@@ -90,9 +144,10 @@ class CoreTest(unittest.TestCase):
         for args in cases:
             with self.subTest(args=args), self.assertRaises(ValueError):
                 refine_mesh(*args)
-        for angle in (-1, 181, float("nan")):
-            with self.assertRaises(ValueError):
-                refine_mesh(v, f, w, angle_threshold_deg=angle)
+
+    def test_angle_option_removed(self):
+        with self.assertRaises(TypeError):
+            refine_mesh(*fixture(), angle_threshold_deg=180)
 
 
 class MetricsTest(unittest.TestCase):
@@ -179,6 +234,22 @@ class CLITest(unittest.TestCase):
         else:
             self.assertNotEqual(r.returncode, 0)
         return r
+
+    def test_refine_help_has_no_angle_threshold(self):
+        self.assertNotIn("--angle-threshold-deg", self.run_cli("refine", "--help").stdout)
+
+    def test_mean_cli(self):
+        v, f, w = fixture()
+        with tempfile.TemporaryDirectory() as tmp:
+            src, dst = Path(tmp) / "input.npz", Path(tmp) / "mean.npz"
+            np.savez(src, vertices=v, faces=f, skin=w)
+            self.run_cli("refine", "--input", src, "--output", dst, "--fusion", "mean")
+            with np.load(dst, allow_pickle=False) as data:
+                np.testing.assert_array_equal(data["skin"][0], [0.5, 0.5])
+                config = json.loads(str(data["metadata_json"]))["fusion"]
+                self.assertEqual(config["policy"], "uniform")
+                self.assertIsNone(config["bandwidth_mode"])
+                self.assertNotIn("bandwidth", config)
 
     def test_complete_cli_and_no_overwrite(self):
         v, f, gt = fixture()

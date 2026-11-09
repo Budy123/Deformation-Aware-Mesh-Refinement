@@ -159,16 +159,21 @@ final = result["evaluation"]
 scores = evaluate_mesh(vertices, faces, gt_weights, final, skeleton=skeleton)
 ```
 
-`refine_mesh(vertices, faces, skin, *, angle_threshold_deg=180.0,
-fusion_config=None)` uses the following paper-final policy when no config is
+`refine_mesh(vertices, faces, skin, *, fusion_config=None)` uses the following
+paper-final policy when no config is
 provided: self-included Gaussian L2, group-RMS bandwidth
 `h = max(0.5 * d_group, 1e-12)`. Here `d_group` is the RMS distance of normalized
-valid rows from their group mean. The legacy fixed-bandwidth configuration is
-available through `SkinningFusionConfig` but is **not** this public API's default.
+valid rows from their group mean. `SkinningFusionConfig` has only two fields:
+`policy` (`"gaussian_l2"` for KDE or `"uniform"` for Mean) and `adaptive_scale`
+(the positive bandwidth scale `c`, default `0.5`; unused by Mean). KDE always
+includes self-contributions and uses group-RMS bandwidth with a fixed `1e-12`
+floor. Fixed-bandwidth and leave-one-out variants are not included.
 
-The production function bodies in `_topology.py` and `fusion.py` are preserved.
-The validated wrapper selects the paper configuration and matches production
-float32 skin storage; it does not change the estimator or cleanup decisions.
+For faces occupying the same three positions, a negative dot product between
+their unit normals identifies opposite orientations and prevents merging.
+There is no additional incident-normal angle threshold. Vertices without valid
+incident faces remain protected. Fusion and cleanup follow the production
+implementation, including float32 skin storage.
 
 `evaluate_mesh(vertices, faces, gt_skin, refined, *, skeleton=None,
 pose_count=64, pose_angle_deg=30.0, seed=321, sample_index=0)` expects the phase
@@ -238,7 +243,6 @@ All commands also accept `-h` / `--help`.
 | `refine` | `--phase {analysis,evaluation}` | `evaluation`; which phase to save. |
 | `refine` | `--fusion {kde,mean}` | `kde`; `mean` is the uniform averaging baseline. |
 | `refine` | `--bandwidth-scale FLOAT` | `0.5`, finite and positive; Gaussian group-RMS scale; unused by uniform fusion. |
-| `refine` | `--angle-threshold-deg FLOAT` | `180`, finite within `[0,180]`. |
 | `evaluate` | `--input PATH` | Required original geometry/GT NPZ; optional skeleton. |
 | `evaluate` | `--refined PATH` | Required refined phase NPZ with retained-index mapping. |
 | `evaluate` | `--output PATH` | Required **new** JSON file; no overwrite flag. |

@@ -1,4 +1,4 @@
-"""Unchanged production metric kernels, without dataset/inference dependencies."""
+"""Production-derived metric kernels without dataset/inference dependencies."""
 from collections import defaultdict
 from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
@@ -83,19 +83,16 @@ def _linear_blend_skinning_np(
     matrix_local: np.ndarray,
     matrix: np.ndarray,
     skin: np.ndarray,
-    *,
-    pad: int = 1,
-    value: float = 1.0,
 ) -> np.ndarray:
     vertex = np.asarray(vertex, dtype=np.float64)
     matrix_local = np.asarray(matrix_local, dtype=np.float64)
     matrix = np.asarray(matrix, dtype=np.float64)
     skin = np.asarray(skin, dtype=np.float64)
-    if vertex.ndim != 2 or vertex.shape[1] + int(pad) != 4:
-        raise ValueError(f"[SURFACE-METRICS] vertex must be (N, {4 - int(pad)}), got {vertex.shape}")
+    if vertex.ndim != 2 or vertex.shape[1] != 3:
+        raise ValueError(f"[SURFACE-METRICS] vertex must be (N, 3), got {vertex.shape}")
     joint_count = int(matrix_local.shape[0])
     vertex_count = int(vertex.shape[0])
-    padded = np.pad(vertex, ((0, 0), (0, int(pad))), mode="constant", constant_values=(0.0, float(value))).T
+    padded = np.pad(vertex, ((0, 0), (0, 1)), mode="constant", constant_values=(0.0, 1.0)).T
     trans = matrix @ np.linalg.inv(matrix_local)
     weighted = np.zeros((joint_count, 4, vertex_count), dtype=np.float64)
     mask = (skin > 0).T
@@ -178,16 +175,12 @@ def _unirig_vertex_loss_for_skin_pair(
             matrix_local,
             pose_matrix,
             gt_skin_eval,
-            pad=1,
-            value=1.0,
         )
         vertices_pred = _linear_blend_skinning_np(
             vertices_eval,
             matrix_local,
             pose_matrix,
             pred_skin_eval,
-            pad=1,
-            value=1.0,
         )
         diff = vertices_gt - vertices_pred
         mse_values.append(float(np.mean(np.square(diff))))

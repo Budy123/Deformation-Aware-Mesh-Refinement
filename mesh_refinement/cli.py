@@ -43,7 +43,6 @@ def main(argv=None):
     refine.add_argument("--phase", choices=("analysis", "evaluation"), default="evaluation")
     refine.add_argument("--fusion", choices=("kde", "mean"), default="kde")
     refine.add_argument("--bandwidth-scale", type=float, default=0.5)
-    refine.add_argument("--angle-threshold-deg", type=float, default=180.0)
     evaluate = sub.add_parser("evaluate", help="Evaluate a refined NPZ against original GT")
     evaluate.add_argument("--input", type=Path, required=True, help="Original vertices, faces, gt_skin; optional skeleton")
     evaluate.add_argument("--refined", type=Path, required=True)
@@ -65,10 +64,8 @@ def main(argv=None):
         if not np.isfinite(args.bandwidth_scale) or args.bandwidth_scale <= 0:
             raise ValueError("bandwidth-scale must be finite and positive")
         config = SkinningFusionConfig(policy="uniform" if args.fusion == "mean" else "gaussian_l2",
-                  self_included=True, bandwidth_mode="group_rms", bandwidth=None,
-                  adaptive_scale=args.bandwidth_scale)
-        result = refine_mesh(data["vertices"], data["faces"], data["skin"],
-                    angle_threshold_deg=args.angle_threshold_deg, fusion_config=config)
+                                      adaptive_scale=args.bandwidth_scale)
+        result = refine_mesh(data["vertices"], data["faces"], data["skin"], fusion_config=config)
         phase = result[args.phase]
         arrays = {k: v for k, v in phase.items() if isinstance(v, np.ndarray)}
         # Ground truth is never fused: it is mapped via original retained indices.
@@ -77,7 +74,7 @@ def main(argv=None):
         for key in ("matrix_local", "parents"):
             if key in data:
                 arrays[key] = data[key]
-        metadata = {**runtime, "phase": args.phase, "angle_threshold_deg": args.angle_threshold_deg,
+        metadata = {**runtime, "phase": args.phase,
                     "fusion": result["skin_fusion_config"],
                     "removed_vertex_count_by_merge": result["removed_vertex_count"],
                     "issue_types": result["issue_types"]}

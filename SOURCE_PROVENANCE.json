@@ -2,13 +2,13 @@
   "extraction_date": "2026-11-05",
   "root_commit": "0e29ee6d3d74581b44c07b309ee6fda221a5509b",
   "production_commit": "944757ba63869a08acaaeb3186fafd94f9bfd656",
-  "notes": "Local release preparation, not an upstream official release. Extracted functions are preserved verbatim; public wrappers add validation and paper defaults. Original source paths are relative historical identifiers, not runtime dependencies.",
+  "notes": "The standalone code is adapted from the recorded extraction. On 2026-11-08, topology switched to coincident-face unit-normal dot products below zero, removed the extra angle threshold, consolidated position grouping and removed unused private parameters. Fusion supports only paper self-included group-RMS KDE and uniform Mean; obsolete experimental branches and compatibility wrappers were removed. LBS uses its fixed 3D homogeneous-coordinate convention. Numerical estimator and metric definitions are retained. Source paths, function lists and hashes below identify the original extraction, not runtime dependencies or byte identity of current adapted modules.",
   "sources": [
     {
       "source": "Rig/Puppeteer/skinning_weight_fusion.py",
       "sha256": "2d72816438493cc3fed192461f04938e521a551b57f8960ee448a83ab16506c3",
       "target": "mesh_refinement/fusion.py",
-      "mode": "unchanged complete module",
+      "mode": "adapted: paper KDE and Mean retained; legacy options and unused wrapper removed",
       "source_commit": "944757ba63869a08acaaeb3186fafd94f9bfd656",
       "verified_git_blob": "a345a083e5fb964e897324edfa1c1cbaa1d094ac"
     },
@@ -47,7 +47,8 @@
         "_non_manifold_edge_count_python",
         "_nearest_neighbor_query"
       ],
-      "functions_match_root_commit": true
+      "original_extraction_matches_root_commit": true,
+      "mode": "adapted: metric definitions retained; unused LBS padding parameters removed"
     }
   ]
 }

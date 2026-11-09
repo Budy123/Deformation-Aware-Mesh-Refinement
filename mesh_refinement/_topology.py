@@ -1,30 +1,23 @@
-"""Production topology kernels; public callers should use core.refine_mesh."""
+"""Production-derived topology kernels; use core.refine_mesh publicly."""
 import itertools
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Sequence, Tuple
 import numpy as np
-from .fusion import (DEFAULT_L2_KDE_BANDWIDTH, SkinningFusionConfig,
+from .fusion import (DEFAULT_ADAPTIVE_BANDWIDTH_FLOOR, SkinningFusionConfig,
     format_skinning_fusion_tag, fuse_skinning_weights,
-    validate_l2_kde_bandwidth, validate_skinning_fusion_config)
+    validate_skinning_fusion_config)
 
 EPS = 1e-12
 
-def _position_groups(vertices: np.ndarray) -> List[List[int]]:
+def _position_groups(vertices: np.ndarray) -> Tuple[List[List[int]], np.ndarray]:
+    """Build duplicate groups and all position IDs in first-seen order."""
     groups: Dict[Tuple[float, float, float], List[int]] = {}
     for idx, vertex in enumerate(np.asarray(vertices)):
         key = (float(vertex[0]), float(vertex[1]), float(vertex[2]))
         groups.setdefault(key, []).append(int(idx))
-    return [[int(i) for i in indices] for indices in groups.values() if len(indices) > 1]
-
-
-def _position_group_ids(vertices: np.ndarray) -> np.ndarray:
     group_ids = np.full(int(np.asarray(vertices).shape[0]), -1, dtype=np.int64)
-    groups: Dict[Tuple[float, float, float], List[int]] = {}
-    for idx, vertex in enumerate(np.asarray(vertices)):
-        key = (float(vertex[0]), float(vertex[1]), float(vertex[2]))
-        groups.setdefault(key, []).append(int(idx))
     for gid, indices in enumerate(groups.values()):
         group_ids[np.asarray(indices, dtype=np.int64)] = int(gid)
-    return group_ids
+    return [indices for indices in groups.values() if len(indices) > 1], group_ids
 
 
 def _canonical_cyclic_face_key(tri: Sequence[int]) -> Tuple[int, int, int]:
@@ -32,25 +25,19 @@ def _canonical_cyclic_face_key(tri: Sequence[int]) -> Tuple[int, int, int]:
     return min((a, b, c), (b, c, a), (c, a, b))
 
 
-def _face_geom_key_and_orientation(tri: Sequence[int]) -> Tuple[Tuple[int, int, int], int]:
-    same = _canonical_cyclic_face_key(tri)
-    reverse = _canonical_cyclic_face_key((int(tri[0]), int(tri[2]), int(tri[1])))
-    if same <= reverse:
-        return same, 0
-    return reverse, 1
-
-
 def _compute_incident_face_normals(
     vertices: np.ndarray,
     faces: np.ndarray,
     position_group_ids: np.ndarray,
-) -> Tuple[List[np.ndarray], List[Dict[Tuple[int, int, int], set]], int]:
+) -> Tuple[np.ndarray, List[Dict[Tuple[int, int, int], List[np.ndarray]]], int]:
     vertices = np.asarray(vertices, dtype=np.float64)
     faces = np.asarray(faces, dtype=np.int64)
-    incident = [np.zeros((0, 3), dtype=np.float64) for _ in range(vertices.shape[0])]
-    incident_signatures: List[Dict[Tuple[int, int, int], set]] = [{} for _ in range(vertices.shape[0])]
+    has_valid_incident = np.zeros(vertices.shape[0], dtype=bool)
+    incident_signatures: List[Dict[Tuple[int, int, int], List[np.ndarray]]] = [
+        {} for _ in range(vertices.shape[0])
+    ]
     if faces.size == 0:
-        return incident, incident_signatures, 0
+        return has_valid_incident, incident_signatures, 0
 
     tri0 = vertices[faces[:, 0]]
     tri1 = vertices[faces[:, 1]]
@@ -59,11 +46,8 @@ def _compute_incident_face_normals(
     norm = np.linalg.norm(raw, axis=1)
     valid = norm > EPS
 
-    buckets: List[List[np.ndarray]] = [[] for _ in range(vertices.shape[0])]
     for tri, normal in zip(faces[valid], raw[valid] / norm[valid, None]):
-        buckets[int(tri[0])].append(normal)
-        buckets[int(tri[1])].append(normal)
-        buckets[int(tri[2])].append(normal)
+        has_valid_incident[tri] = True
 
         pos_tri = (
             int(position_group_ids[int(tri[0])]),
@@ -72,33 +56,23 @@ def _compute_incident_face_normals(
         )
         if len({pos_tri[0], pos_tri[1], pos_tri[2]}) != 3:
             continue
-        geom_key, orientation = _face_geom_key_and_orientation(pos_tri)
+        geom_key = tuple(sorted(pos_tri))
         for vertex_idx in tri.tolist():
-            incident_signatures[int(vertex_idx)].setdefault(geom_key, set()).add(int(orientation))
+            incident_signatures[int(vertex_idx)].setdefault(geom_key, []).append(normal)
 
-    return [
-        np.stack(items, axis=0).astype(np.float64) if items else np.zeros((0, 3), dtype=np.float64)
-        for items in buckets
-    ], incident_signatures, int((~valid).sum())
-
-
-def _min_incident_face_angle_deg(normals_a: np.ndarray, normals_b: np.ndarray) -> Optional[float]:
-    if normals_a.shape[0] == 0 or normals_b.shape[0] == 0:
-        return None
-    max_dot = float(np.max(normals_a @ normals_b.T))
-    max_dot = float(np.clip(max_dot, -1.0, 1.0))
-    return float(np.degrees(np.arccos(max_dot)))
+    return has_valid_incident, incident_signatures, int((~valid).sum())
 
 
 def _has_reverse_face_conflict(
-    signatures_a: Dict[Tuple[int, int, int], set],
-    signatures_b: Dict[Tuple[int, int, int], set],
+    signatures_a: Dict[Tuple[int, int, int], List[np.ndarray]],
+    signatures_b: Dict[Tuple[int, int, int], List[np.ndarray]],
 ) -> bool:
+    """Compare unit normals only for faces occupying the same three positions."""
     shared_keys = set(signatures_a).intersection(signatures_b)
     for geom_key in shared_keys:
-        orients_a = signatures_a[geom_key]
-        orients_b = signatures_b[geom_key]
-        if (0 in orients_a and 1 in orients_b) or (1 in orients_a and 0 in orients_b):
+        normals_a = np.asarray(signatures_a[geom_key])
+        normals_b = np.asarray(signatures_b[geom_key])
+        if np.any(normals_a @ normals_b.T < 0.0):
             return True
     return False
 
@@ -137,9 +111,7 @@ def _finalize_mesh_output(
     remapped_faces: np.ndarray,
     representative_old_index: np.ndarray,
     original_vertex_count: int,
-    remove_degenerate: bool,
-    remove_same_orientation_duplicates: bool,
-    remove_reverse_duplicates: bool,
+    remove_faces: bool,
 ) -> Dict[str, Any]:
     kept_faces: List[np.ndarray] = []
     kept_source_face_indices: List[int] = []
@@ -157,7 +129,7 @@ def _finalize_mesh_output(
         tri_int = np.asarray(tri, dtype=np.int64)
         if len({int(tri_int[0]), int(tri_int[1]), int(tri_int[2])}) != 3:
             encountered_degenerate += 1
-            if remove_degenerate:
+            if remove_faces:
                 removed_degenerate += 1
                 continue
             kept_faces.append(tri_int)
@@ -165,16 +137,16 @@ def _finalize_mesh_output(
             continue
 
         oriented_key = _canonical_cyclic_face_key(tri_int)
-        geom_key, _ = _face_geom_key_and_orientation(tri_int)
+        geom_key = tuple(sorted(int(i) for i in tri_int))
 
         if oriented_key in seen_oriented_keys:
             encountered_duplicate += 1
-            if remove_same_orientation_duplicates:
+            if remove_faces:
                 removed_duplicate += 1
                 continue
         if geom_key in seen_geom_keys:
             encountered_reverse_duplicate += 1
-            if remove_reverse_duplicates:
+            if remove_faces:
                 removed_reverse_duplicate += 1
                 continue
 
@@ -220,36 +192,18 @@ def _finalize_mesh_output(
     }
 
 
-def dedup_vertices_with_gt_skin_incident_face_threshold(
+def _refine_mesh(
     vertices: np.ndarray,
     faces: np.ndarray,
     skin: np.ndarray,
     *,
-    atol: float,
-    angle_threshold_deg: float,
-    skin_kde_bandwidth: float = DEFAULT_L2_KDE_BANDWIDTH,
-    skin_fusion_config: Optional[SkinningFusionConfig] = None,
+    skin_fusion_config: SkinningFusionConfig,
 ) -> Dict[str, Any]:
-    """Fuse and merge orientation-compatible exact-position duplicates.
+    """Fuse and merge exact-position duplicates with the resolved public config."""
 
-    The original positional/keyword contract is preserved.  The optional KDE
-    bandwidth is validated before topology inspection so invalid experiment
-    settings fail even when the mesh contains no mergeable duplicate group.
-    """
-
-    skin_kde_bandwidth = validate_l2_kde_bandwidth(skin_kde_bandwidth)
-    if skin_fusion_config is None:
-        fusion_config = SkinningFusionConfig(
-            policy="gaussian_l2",
-            self_included=True,
-            bandwidth_mode="fixed",
-            bandwidth=skin_kde_bandwidth,
-        )
-    else:
-        fusion_config = validate_skinning_fusion_config(skin_fusion_config)
-    duplicate_items = _position_groups(vertices)
-    position_group_ids = _position_group_ids(vertices)
-    incident_normals, incident_signatures, degenerate_faces_total = _compute_incident_face_normals(
+    fusion_config = validate_skinning_fusion_config(skin_fusion_config)
+    duplicate_items, position_group_ids = _position_groups(vertices)
+    has_valid_incident, incident_signatures, degenerate_faces_total = _compute_incident_face_normals(
         vertices,
         faces,
         position_group_ids,
@@ -260,11 +214,9 @@ def dedup_vertices_with_gt_skin_incident_face_threshold(
     skin_after_fusion = np.asarray(skin, dtype=np.float32).copy()
     merge_groups: List[List[int]] = []
     protected_groups: List[List[int]] = []
-    groups_blocked_by_normal: List[List[int]] = []
     invalid_normal_groups: List[List[int]] = []
     reverse_face_groups: List[List[int]] = []
     component_merge_groups: List[List[int]] = []
-    protected_pairs_angle: List[List[int]] = []
     protected_pairs_invalid_incident: List[List[int]] = []
     protected_pairs_reverse_face: List[List[int]] = []
     skin_fusion_groups: List[Dict[str, Any]] = []
@@ -273,7 +225,6 @@ def dedup_vertices_with_gt_skin_incident_face_threshold(
     for indices in duplicate_items:
         ordered_indices = [int(index) for index in indices]
         compatible = np.eye(len(ordered_indices), dtype=bool)
-        group_has_angle_block = False
         group_has_invalid = False
         group_has_reverse = False
 
@@ -281,8 +232,7 @@ def dedup_vertices_with_gt_skin_incident_face_threshold(
             idx_a = int(ordered_indices[local_a])
             idx_b = int(ordered_indices[local_b])
 
-            angle = _min_incident_face_angle_deg(incident_normals[idx_a], incident_normals[idx_b])
-            if angle is None:
+            if not has_valid_incident[idx_a] or not has_valid_incident[idx_b]:
                 invalid_pair_count += 1
                 group_has_invalid = True
                 compatible[local_a, local_b] = False
@@ -297,20 +247,11 @@ def dedup_vertices_with_gt_skin_incident_face_threshold(
                 protected_pairs_reverse_face.append([idx_a, idx_b])
                 continue
 
-            if angle > float(angle_threshold_deg):
-                group_has_angle_block = True
-                compatible[local_a, local_b] = False
-                compatible[local_b, local_a] = False
-                protected_pairs_angle.append([idx_a, idx_b])
-                continue
-
             compatible[local_a, local_b] = True
             compatible[local_b, local_a] = True
 
         if group_has_invalid:
             invalid_normal_groups.append(ordered_indices)
-        if group_has_angle_block:
-            groups_blocked_by_normal.append(ordered_indices)
         if group_has_reverse:
             reverse_face_groups.append(ordered_indices)
 
@@ -356,9 +297,7 @@ def dedup_vertices_with_gt_skin_incident_face_threshold(
         remapped_faces=remapped_faces,
         representative_old_index=representative,
         original_vertex_count=int(vertices.shape[0]),
-        remove_degenerate=False,
-        remove_same_orientation_duplicates=False,
-        remove_reverse_duplicates=False,
+        remove_faces=False,
     )
     evaluation_output = _finalize_mesh_output(
         vertices_after_merge=merged_vertices,
@@ -367,9 +306,7 @@ def dedup_vertices_with_gt_skin_incident_face_threshold(
         remapped_faces=remapped_faces,
         representative_old_index=representative,
         original_vertex_count=int(vertices.shape[0]),
-        remove_degenerate=True,
-        remove_same_orientation_duplicates=True,
-        remove_reverse_duplicates=True,
+        remove_faces=True,
     )
 
     issue_types: List[str] = []
@@ -377,8 +314,6 @@ def dedup_vertices_with_gt_skin_incident_face_threshold(
         issue_types.append("pairwise_invalid_incident_blocked")
     if protected_pairs_reverse_face:
         issue_types.append("pairwise_reverse_face_conflict_blocked")
-    if protected_pairs_angle:
-        issue_types.append("pairwise_angle_conflict_blocked")
     if analysis_output["encountered_face_count_degenerate"] > 0:
         issue_types.append("degenerate_after_remap")
     if analysis_output["encountered_face_count_reverse_duplicate"] > 0:
@@ -407,11 +342,9 @@ def dedup_vertices_with_gt_skin_incident_face_threshold(
         "merge_groups": merge_groups,
         "protected_groups": protected_groups,
         "removed_vertex_count": int(drop_mask.sum()),
-        "groups_blocked_by_normal": groups_blocked_by_normal,
         "invalid_normal_groups": invalid_normal_groups,
         "reverse_face_groups": reverse_face_groups,
         "pairs_without_valid_incident_faces": int(invalid_pair_count),
-        "protected_pairs_angle": protected_pairs_angle,
         "protected_pairs_invalid_incident": protected_pairs_invalid_incident,
         "protected_pairs_reverse_face": protected_pairs_reverse_face,
         "component_merge_groups": component_merge_groups,
@@ -420,15 +353,12 @@ def dedup_vertices_with_gt_skin_incident_face_threshold(
         ),
         "skin_fusion_config": {
             "policy": fusion_config.policy,
-            "self_included": bool(fusion_config.self_included),
-            "bandwidth_mode": fusion_config.bandwidth_mode,
-            "bandwidth": fusion_config.bandwidth,
-            "adaptive_scale": fusion_config.adaptive_scale,
-            "adaptive_bandwidth_floor": fusion_config.adaptive_bandwidth_floor,
+            "self_included": True,
+            "bandwidth_mode": "group_rms" if fusion_config.policy == "gaussian_l2" else None,
+            "adaptive_scale": fusion_config.adaptive_scale if fusion_config.policy == "gaussian_l2" else None,
+            "adaptive_bandwidth_floor": DEFAULT_ADAPTIVE_BANDWIDTH_FLOOR,
             "identity_tag": format_skinning_fusion_tag(fusion_config),
         },
-        "skin_kde_bandwidth": skin_kde_bandwidth,
-        "skin_fusion_leave_one_out": not bool(fusion_config.self_included),
         "skin_fusion_groups": skin_fusion_groups,
         "input_degenerate_face_count": int(degenerate_faces_total),
         "merge_partition_strategy": "greedy_clique",
