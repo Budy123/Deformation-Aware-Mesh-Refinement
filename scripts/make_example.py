@@ -1,4 +1,4 @@
-"""Create a tiny numeric example without downloading or redistributing data."""
+"""Create a tiny numeric demo without downloading or redistributing data."""
 import argparse
 from pathlib import Path
 

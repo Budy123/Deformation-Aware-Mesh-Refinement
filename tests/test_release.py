@@ -1,4 +1,5 @@
 import json
+from dataclasses import asdict
 from pathlib import Path
 import subprocess
 import sys
@@ -6,10 +7,11 @@ import tempfile
 import unittest
 
 import numpy as np
+import yaml
 
 from mesh_refinement import evaluate_mesh, fuse_skinning_weights, paper_fusion_config, refine_mesh
 from mesh_refinement._topology import _partition_pairwise_compatible_groups, _position_groups
-from mesh_refinement.fusion import SkinningFusionConfig
+from mesh_refinement.fusion import SkinningFusionConfig, format_skinning_fusion_tag
 
 
 def fixture():
@@ -45,7 +47,7 @@ class CoreTest(unittest.TestCase):
 
     def test_legacy_fusion_options_are_rejected(self):
         for option, value in [("self_included", False), ("bandwidth_mode", "fixed"),
-                              ("bandwidth", 0.1), ("adaptive_bandwidth_floor", 1e-6)]:
+                              ("bandwidth", 0.1)]:
             with self.subTest(option=option), self.assertRaises(TypeError):
                 SkinningFusionConfig(**{option: value})
         for value in (0, -1, float("nan"), float("inf")):
@@ -58,6 +60,67 @@ class CoreTest(unittest.TestCase):
         np.testing.assert_allclose(result.fused_skin, rows[0])
         self.assertEqual(result.bandwidth, 1e-12)
         self.assertTrue(np.isfinite(result.coefficients).all())
+
+    def test_complete_config_defaults(self):
+        self.assertEqual(asdict(paper_fusion_config()), {
+            "policy": "gaussian_l2", "adaptive_scale": 0.5,
+            "adaptive_bandwidth_floor": 1e-12, "gaussian_exponent_scale": 0.5})
+        result = refine_mesh(*fixture())
+        for key, value in asdict(paper_fusion_config()).items():
+            self.assertEqual(result["skin_fusion_config"][key], value)
+
+    def test_gaussian_exponent_matches_configured_formula(self):
+        rows = np.array([[0.8, 0.2], [0.7, 0.3], [0.1, 0.9]])
+        results = []
+        for exponent in (0.5, 1.0):
+            result = fuse_skinning_weights(rows, config=SkinningFusionConfig(
+                gaussian_exponent_scale=exponent))
+            densities = np.exp(-exponent * np.square(result.pairwise_l2 / result.bandwidth)).sum(axis=1)
+            expected = densities / densities.sum()
+            np.testing.assert_allclose(result.coefficients, expected, rtol=1e-14, atol=1e-14)
+            np.testing.assert_allclose(result.fused_skin, expected @ rows, rtol=1e-14, atol=1e-14)
+            self.assertEqual(result.diagnostics()["gaussian_exponent_scale"], exponent)
+            results.append(result.fused_skin)
+        self.assertFalse(np.allclose(results[0], results[1]))
+
+    def test_configured_bandwidth_floor(self):
+        config = SkinningFusionConfig(adaptive_bandwidth_floor=0.8)
+        rows = np.array([[0.8, 0.2], [0.7, 0.3], [0.1, 0.9]])
+        result = fuse_skinning_weights(rows, config=config)
+        self.assertEqual(result.bandwidth, 0.8)
+        self.assertEqual(result.diagnostics()["adaptive_bandwidth_floor"], 0.8)
+        default = fuse_skinning_weights(rows, config=paper_fusion_config())
+        self.assertFalse(np.allclose(result.coefficients, default.coefficients))
+        for special in (rows[:1], np.repeat(rows[:1], 3, axis=0),
+                        np.vstack([rows[:1], np.zeros((1, 2))])):
+            self.assertEqual(fuse_skinning_weights(special, config=config).bandwidth, 0.8)
+        zero = fuse_skinning_weights(np.zeros((3, 2)), config=config)
+        self.assertEqual(zero.fallback_reason, "all_zero_rows")
+        self.assertEqual(zero.diagnostics()["adaptive_bandwidth_floor"], 0.8)
+
+    def test_invalid_numeric_config_fields(self):
+        for key in ("adaptive_scale", "adaptive_bandwidth_floor", "gaussian_exponent_scale"):
+            for value in (0, -1, float("nan"), float("inf"), "invalid"):
+                with self.subTest(field=key, value=value), self.assertRaisesRegex(ValueError, key):
+                    refine_mesh(*fixture(), fusion_config=SkinningFusionConfig(**{key: value}))
+
+    def test_config_identity_tags(self):
+        original = "skin-fusion-gaussian-l2-self-group-rms-c0p5"
+        self.assertEqual(format_skinning_fusion_tag(paper_fusion_config()), original)
+        tags = [format_skinning_fusion_tag(config) for config in (
+            paper_fusion_config(), SkinningFusionConfig(adaptive_bandwidth_floor=0.8),
+            SkinningFusionConfig(gaussian_exponent_scale=1.0))]
+        self.assertEqual(len(set(tags)), 3)
+
+    def test_mean_ignores_kde_parameters(self):
+        config = SkinningFusionConfig(policy="uniform", adaptive_scale=0.9,
+            adaptive_bandwidth_floor=0.8, gaussian_exponent_scale=1.0)
+        rows = np.array([[0.8, 0.2], [0.7, 0.3], [0.1, 0.9]])
+        result = fuse_skinning_weights(rows, config=config)
+        np.testing.assert_allclose(result.fused_skin, rows.mean(axis=0))
+        self.assertIsNone(result.bandwidth)
+        self.assertIsNone(result.gaussian_exponent_scale)
+        self.assertEqual(format_skinning_fusion_tag(config), "skin-fusion-uniform")
 
     def test_two_vertices_mean_and_cleanup(self):
         v, f, w = fixture()
@@ -265,6 +328,102 @@ class CLITest(unittest.TestCase):
             with np.load(dst, allow_pickle=False) as data:
                 np.testing.assert_array_equal(data["gt_skin"], gt[data["keep_indices"]])
                 self.assertEqual(json.loads(str(data["metadata_json"]))["fusion"]["adaptive_scale"], 0.5)
+                metadata = json.loads(str(data["metadata_json"]))
+            self.assertEqual(json.loads(scores.read_text())["refinement"], metadata)
+            for key, value in asdict(paper_fusion_config()).items():
+                self.assertEqual(metadata["fusion"][key], value)
+
+    def test_yaml_config_controls_refinement(self):
+        v, f, w = fixture()
+        v = np.concatenate([v, v[:1]])
+        f = np.concatenate([f, [[4, 2, 3]]])
+        w = np.concatenate([w, [[0.2, 0.8]]])
+        config = SkinningFusionConfig(adaptive_scale=0.2,
+            adaptive_bandwidth_floor=0.75, gaussian_exponent_scale=1.0)
+        expected = refine_mesh(v, f, w, fusion_config=config)["evaluation"]
+        with tempfile.TemporaryDirectory() as tmp:
+            src, dst, path = [Path(tmp) / n for n in ("input.npz", "refined.npz", "config.yaml")]
+            np.savez(src, vertices=v, faces=f, skin=w)
+            path.write_text("# Configuration comments must be accepted.\n"
+                "policy: gaussian_l2\nadaptive_scale: 0.2\n"
+                "adaptive_bandwidth_floor: 0.75\n"
+                "gaussian_exponent_scale: 1.0  # denominator h^2\n", encoding="utf-8")
+            self.run_cli("refine", "--input", src, "--output", dst, "--config", path)
+            with np.load(dst, allow_pickle=False) as data:
+                np.testing.assert_array_equal(data["skin"], expected["skin"])
+                metadata = json.loads(str(data["metadata_json"]))
+                for key, value in asdict(config).items():
+                    self.assertEqual(metadata["fusion"][key], value)
+
+    def test_yaml_config_defaults_and_cli_precedence(self):
+        v, f, w = fixture()
+        with tempfile.TemporaryDirectory() as tmp:
+            src, path = Path(tmp) / "input.npz", Path(tmp) / "config.yaml"
+            np.savez(src, vertices=v, faces=f, skin=w)
+            path.write_text(yaml.safe_dump({"policy": "uniform", "adaptive_scale": 0.2}), encoding="utf-8")
+            dst = Path(tmp) / "mean.npz"
+            self.run_cli("refine", "--input", src, "--output", dst, "--config", path)
+            with np.load(dst, allow_pickle=False) as data:
+                self.assertEqual(json.loads(str(data["metadata_json"]))["fusion"]["policy"], "uniform")
+            dst = Path(tmp) / "kde.npz"
+            self.run_cli("refine", "--input", src, "--output", dst, "--config", path,
+                         "--fusion", "kde", "--bandwidth-scale", 0.9)
+            with np.load(dst, allow_pickle=False) as data:
+                config = json.loads(str(data["metadata_json"]))["fusion"]
+                self.assertEqual(config["policy"], "gaussian_l2")
+                self.assertEqual(config["adaptive_scale"], 0.9)
+                self.assertEqual(config["adaptive_bandwidth_floor"], 1e-12)
+                self.assertEqual(config["gaussian_exponent_scale"], 0.5)
+
+    def test_invalid_yaml_configs(self):
+        v, f, w = fixture()
+        cases = [None, [], {"unexpected": 1}, {"self_included": False}, {"bandwidth_mode": "fixed"},
+                 {"adaptive_bandwidth_floor": 0}, {"gaussian_exponent_scale": -1},
+                 {"adaptive_bandwidth_floor": float("nan")}, {"gaussian_exponent_scale": float("inf")}]
+        with tempfile.TemporaryDirectory() as tmp:
+            src, dst, path = [Path(tmp) / n for n in ("input.npz", "out.npz", "config.yaml")]
+            np.savez(src, vertices=v, faces=f, skin=w)
+            for value in cases:
+                with self.subTest(config=value):
+                    path.write_text(yaml.safe_dump(value), encoding="utf-8")
+                    self.run_cli("refine", "--input", src, "--output", dst, "--config", path, ok=False)
+                    self.assertFalse(dst.exists())
+
+    def test_malformed_yaml_and_python_tags_rejected(self):
+        v, f, w = fixture()
+        with tempfile.TemporaryDirectory() as tmp:
+            src, dst, path = [Path(tmp) / n for n in ("input.npz", "out.npz", "config.yaml")]
+            np.savez(src, vertices=v, faces=f, skin=w)
+            for contents in ("adaptive_scale: [unclosed", "!!python/object/apply:builtins.str [unsafe]"):
+                with self.subTest(contents=contents):
+                    path.write_text(contents, encoding="utf-8")
+                    self.run_cli("refine", "--input", src, "--output", dst, "--config", path, ok=False)
+                    self.assertFalse(dst.exists())
+
+    def test_yaml_config_matches_defaults(self):
+        path = Path(__file__).resolve().parents[1] / "config/fusion_config.yaml"
+        self.assertEqual(yaml.safe_load(path.read_text(encoding="utf-8")), asdict(paper_fusion_config()))
+        v, f, w = fixture()
+        expected = refine_mesh(v, f, w)["evaluation"]
+        with tempfile.TemporaryDirectory() as tmp:
+            src, dst = Path(tmp) / "input.npz", Path(tmp) / "refined.npz"
+            np.savez(src, vertices=v, faces=f, skin=w)
+            self.run_cli("refine", "--input", src, "--output", dst, "--config", path)
+            with np.load(dst, allow_pickle=False) as data:
+                np.testing.assert_array_equal(data["skin"], expected["skin"])
+                config = json.loads(str(data["metadata_json"]))["fusion"]
+                for key, value in asdict(paper_fusion_config()).items():
+                    self.assertEqual(config[key], value)
+
+    def test_evaluation_without_refinement_metadata(self):
+        v, f, w = fixture()
+        phase = refine_mesh(v, f, w)["evaluation"]
+        with tempfile.TemporaryDirectory() as tmp:
+            src, dst, scores = [Path(tmp) / n for n in ("input.npz", "refined.npz", "scores.json")]
+            np.savez(src, vertices=v, faces=f, gt_skin=w)
+            np.savez(dst, **phase)
+            self.run_cli("evaluate", "--input", src, "--refined", dst, "--output", scores)
+            self.assertIsNone(json.loads(scores.read_text())["refinement"])
 
     def test_pickle_arrays_rejected(self):
         with tempfile.TemporaryDirectory() as tmp:

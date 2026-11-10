@@ -2,7 +2,7 @@
   "extraction_date": "2026-11-05",
   "root_commit": "0e29ee6d3d74581b44c07b309ee6fda221a5509b",
   "production_commit": "944757ba63869a08acaaeb3186fafd94f9bfd656",
-  "notes": "The standalone code is adapted from the recorded extraction. On 2026-11-08, topology switched to coincident-face unit-normal dot products below zero, removed the extra angle threshold, consolidated position grouping and removed unused private parameters. Fusion supports only paper self-included group-RMS KDE and uniform Mean; obsolete experimental branches and compatibility wrappers were removed. LBS uses its fixed 3D homogeneous-coordinate convention. Numerical estimator and metric definitions are retained. Source paths, function lists and hashes below identify the original extraction, not runtime dependencies or byte identity of current adapted modules.",
+  "notes": "The standalone code is adapted from the recorded extraction. On 2026-11-08, topology switched to coincident-face unit-normal dot products below zero, removed the extra angle threshold, consolidated position grouping and removed unused private parameters. Fusion supports only paper self-included group-RMS KDE and uniform Mean; obsolete experimental branches and compatibility wrappers were removed. On 2026-11-10, bandwidth scale/floor and Gaussian exponent scale were centralized in SkinningFusionConfig, with optional safe YAML loading and JSON resolved-setting provenance; numerical defaults are unchanged. LBS uses its fixed 3D homogeneous-coordinate convention. Source paths, function lists and hashes below identify the original extraction, not runtime dependencies or byte identity of current adapted modules.",
   "sources": [
     {
       "source": "Rig/Puppeteer/skinning_weight_fusion.py",

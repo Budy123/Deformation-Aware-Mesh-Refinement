@@ -1,0 +1,6 @@
+# Recorded experiment defaults. Omitted keys use the same Python defaults.
+policy: gaussian_l2  # gaussian_l2: KDE; uniform: Mean
+adaptive_scale: 0.5
+adaptive_bandwidth_floor: 1.0e-12
+# exp(-scale * (distance / bandwidth)^2); 0.5 gives denominator 2 * bandwidth^2.
+gaussian_exponent_scale: 0.5

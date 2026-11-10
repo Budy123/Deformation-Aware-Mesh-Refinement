@@ -12,7 +12,9 @@ import numpy as np
 
 
 DEFAULT_SIMPLEX_ATOL = 1e-6
+DEFAULT_ADAPTIVE_SCALE = 0.5
 DEFAULT_ADAPTIVE_BANDWIDTH_FLOOR = 1e-12
+DEFAULT_GAUSSIAN_EXPONENT_SCALE = 0.5
 DEFAULT_FUSION_POLICY = "gaussian_l2"
 _ROW_SUM_EPS = 1e-12
 
@@ -26,7 +28,9 @@ class SkinningFusionConfig:
     """Select paper KDE (self-included, group RMS) or uniform averaging."""
 
     policy: str = DEFAULT_FUSION_POLICY
-    adaptive_scale: float = 0.5
+    adaptive_scale: float = DEFAULT_ADAPTIVE_SCALE
+    adaptive_bandwidth_floor: float = DEFAULT_ADAPTIVE_BANDWIDTH_FLOOR
+    gaussian_exponent_scale: float = DEFAULT_GAUSSIAN_EXPONENT_SCALE
 
 
 def validate_skinning_fusion_config(config: SkinningFusionConfig) -> SkinningFusionConfig:
@@ -37,15 +41,18 @@ def validate_skinning_fusion_config(config: SkinningFusionConfig) -> SkinningFus
     policy = str(config.policy)
     if policy not in {"uniform", "gaussian_l2"}:
         raise ValueError("policy must be one of: uniform, gaussian_l2")
-    try:
-        scale = float(config.adaptive_scale)
-    except (TypeError, ValueError, OverflowError) as exc:
-        raise ValueError("adaptive_scale must be a finite positive scalar") from exc
-    if not np.isfinite(scale) or scale <= 0.0:
-        raise ValueError("adaptive_scale must be a finite positive scalar")
+    parameters = {}
+    for name in ("adaptive_scale", "adaptive_bandwidth_floor", "gaussian_exponent_scale"):
+        try:
+            value = float(getattr(config, name))
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise ValueError(f"{name} must be a finite positive scalar") from exc
+        if not np.isfinite(value) or value <= 0.0:
+            raise ValueError(f"{name} must be a finite positive scalar")
+        parameters[name] = value
     if policy == "uniform":
         return SkinningFusionConfig(policy=policy)
-    return SkinningFusionConfig(policy=policy, adaptive_scale=scale)
+    return SkinningFusionConfig(policy=policy, **parameters)
 
 
 def format_skinning_fusion_tag(config: SkinningFusionConfig) -> str:
@@ -54,7 +61,12 @@ def format_skinning_fusion_tag(config: SkinningFusionConfig) -> str:
     resolved = validate_skinning_fusion_config(config)
     if resolved.policy == "uniform":
         return "skin-fusion-uniform"
-    return f"skin-fusion-gaussian-l2-self-group-rms-c{_format_float_tag(resolved.adaptive_scale)}"
+    tag = f"skin-fusion-gaussian-l2-self-group-rms-c{_format_float_tag(resolved.adaptive_scale)}"
+    if resolved.adaptive_bandwidth_floor != DEFAULT_ADAPTIVE_BANDWIDTH_FLOOR:
+        tag += f"-floor{_format_float_tag(resolved.adaptive_bandwidth_floor)}"
+    if resolved.gaussian_exponent_scale != DEFAULT_GAUSSIAN_EXPONENT_SCALE:
+        tag += f"-exp{_format_float_tag(resolved.gaussian_exponent_scale)}"
+    return tag
 
 
 @dataclass(frozen=True)
@@ -71,6 +83,8 @@ class SkinningFusionResult:
     policy: str = DEFAULT_FUSION_POLICY
     adaptive_scale: Optional[float] = None
     group_dispersion: Optional[float] = None
+    adaptive_bandwidth_floor: Optional[float] = None
+    gaussian_exponent_scale: Optional[float] = None
 
     def diagnostics(self, indices: Optional[Sequence[int]] = None) -> Dict[str, Any]:
         """Return a JSON-friendly summary without serializing dense matrices."""
@@ -99,6 +113,8 @@ class SkinningFusionResult:
             "zero_row_count": int(group_size - np.count_nonzero(self.valid_row_mask)),
             "bandwidth": None if self.bandwidth is None else float(self.bandwidth),
             "adaptive_scale": None if self.adaptive_scale is None else float(self.adaptive_scale),
+            "adaptive_bandwidth_floor": self.adaptive_bandwidth_floor,
+            "gaussian_exponent_scale": self.gaussian_exponent_scale,
             "group_dispersion": None if self.group_dispersion is None else float(self.group_dispersion),
             "coefficients": [float(value) for value in self.coefficients.tolist()],
             "log_densities": log_density_values,
@@ -195,6 +211,8 @@ def _build_result(
         policy=str(config.policy),
         adaptive_scale=config.adaptive_scale if config.policy == "gaussian_l2" else None,
         group_dispersion=group_dispersion,
+        adaptive_bandwidth_floor=config.adaptive_bandwidth_floor if config.policy == "gaussian_l2" else None,
+        gaussian_exponent_scale=config.gaussian_exponent_scale if config.policy == "gaussian_l2" else None,
     )
 
 
@@ -228,7 +246,7 @@ def fuse_skinning_weights(
     if valid_count == 1:
         coefficients[int(valid_indices[0])] = 1.0
         log_densities[int(valid_indices[0])] = 0.0
-        singleton_bandwidth = DEFAULT_ADAPTIVE_BANDWIDTH_FLOOR if resolved.policy == "gaussian_l2" else None
+        singleton_bandwidth = resolved.adaptive_bandwidth_floor if resolved.policy == "gaussian_l2" else None
         return _build_result(
             fused_skin=valid_rows[0], coefficients=coefficients, log_densities=log_densities,
             valid_row_mask=valid_mask, pairwise_l2=pairwise, output_dtype=output_dtype,
@@ -244,10 +262,10 @@ def fuse_skinning_weights(
     else:
         effective_bandwidth = max(
             resolved.adaptive_scale * dispersion,
-            DEFAULT_ADAPTIVE_BANDWIDTH_FLOOR,
+            resolved.adaptive_bandwidth_floor,
         )
         with np.errstate(over="ignore", divide="ignore", invalid="ignore"):
-            log_affinity = -0.5 * np.square(pairwise / effective_bandwidth)
+            log_affinity = -resolved.gaussian_exponent_scale * np.square(pairwise / effective_bandwidth)
         valid_log_densities = _row_logsumexp(log_affinity)
         valid_coefficients = _softmax_finite(valid_log_densities)
         if valid_coefficients is None:

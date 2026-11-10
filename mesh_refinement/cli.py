@@ -6,6 +6,7 @@ from pathlib import Path
 import platform
 
 import numpy as np
+import yaml
 
 from . import __version__
 from .core import refine_mesh, validate_skin
@@ -20,10 +21,27 @@ def _load_npz(path, keys):
             raise ValueError("Missing NPZ fields: " + ", ".join(sorted(missing)))
         # Ignore unrelated optional attributes rather than loading object arrays.
         arrays = {key: archive[key] for key in keys}
-        for key in ("gt_skin", "matrix_local", "parents"):
+        for key in ("gt_skin", "matrix_local", "parents", "metadata_json"):
             if key in archive.files and key not in arrays:
                 arrays[key] = archive[key]
     return arrays
+
+
+def _fusion_config(args):
+    values = {}
+    if args.config is not None:
+        with args.config.open(encoding="utf-8") as stream:
+            values = yaml.safe_load(stream)
+        if not isinstance(values, dict):
+            raise ValueError("fusion config must be a YAML mapping")
+    if args.fusion is not None:
+        values["policy"] = "uniform" if args.fusion == "mean" else "gaussian_l2"
+    if args.bandwidth_scale is not None:
+        values["adaptive_scale"] = args.bandwidth_scale
+    try:
+        return SkinningFusionConfig(**values)
+    except TypeError as exc:
+        raise ValueError("Unsupported fusion config field: " + str(exc)) from exc
 
 
 def _fresh_path(path):
@@ -41,8 +59,11 @@ def main(argv=None):
     refine.add_argument("--input", type=Path, required=True)
     refine.add_argument("--output", type=Path, required=True)
     refine.add_argument("--phase", choices=("analysis", "evaluation"), default="evaluation")
-    refine.add_argument("--fusion", choices=("kde", "mean"), default="kde")
-    refine.add_argument("--bandwidth-scale", type=float, default=0.5)
+    refine.add_argument("--config", type=Path, help="Optional YAML SkinningFusionConfig; omitted fields use paper defaults")
+    refine.add_argument("--fusion", choices=("kde", "mean"), default=None,
+                        help="Override the config policy; default without a config is kde")
+    refine.add_argument("--bandwidth-scale", type=float, default=None,
+                        help="Override the config bandwidth scale; paper default is 0.5")
     evaluate = sub.add_parser("evaluate", help="Evaluate a refined NPZ against original GT")
     evaluate.add_argument("--input", type=Path, required=True, help="Original vertices, faces, gt_skin; optional skeleton")
     evaluate.add_argument("--refined", type=Path, required=True)
@@ -61,10 +82,7 @@ def main(argv=None):
         data = _load_npz(args.input, ("vertices", "faces", "skin"))
         if "gt_skin" in data:
             validate_skin(data["gt_skin"], len(data["vertices"]), data["skin"].shape[1])
-        if not np.isfinite(args.bandwidth_scale) or args.bandwidth_scale <= 0:
-            raise ValueError("bandwidth-scale must be finite and positive")
-        config = SkinningFusionConfig(policy="uniform" if args.fusion == "mean" else "gaussian_l2",
-                                      adaptive_scale=args.bandwidth_scale)
+        config = _fusion_config(args)
         result = refine_mesh(data["vertices"], data["faces"], data["skin"], fusion_config=config)
         phase = result[args.phase]
         arrays = {k: v for k, v in phase.items() if isinstance(v, np.ndarray)}
@@ -93,6 +111,12 @@ def main(argv=None):
                     skeleton=skeleton, pose_count=args.pose_count,
                     pose_angle_deg=args.pose_angle_deg, seed=args.seed, sample_index=args.sample_index)
         result["runtime"] = runtime
+        result["refinement"] = None
+        if "metadata_json" in refined:
+            metadata = json.loads(str(refined["metadata_json"]))
+            if not isinstance(metadata, dict):
+                raise ValueError("refinement metadata must be a JSON object")
+            result["refinement"] = metadata
         with output.open("x", encoding="utf-8") as stream:
             json.dump(result, stream, indent=2, allow_nan=False)
             stream.write("\n")

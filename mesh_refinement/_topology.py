@@ -1,8 +1,9 @@
 """Production-derived topology kernels; use core.refine_mesh publicly."""
 import itertools
+from dataclasses import asdict
 from typing import Any, Dict, List, Sequence, Tuple
 import numpy as np
-from .fusion import (DEFAULT_ADAPTIVE_BANDWIDTH_FLOOR, SkinningFusionConfig,
+from .fusion import (SkinningFusionConfig,
     format_skinning_fusion_tag, fuse_skinning_weights,
     validate_skinning_fusion_config)
 
@@ -352,11 +353,9 @@ def _refine_mesh(
             "uniform_mean" if fusion_config.policy == "uniform" else "l2_gaussian_kde"
         ),
         "skin_fusion_config": {
-            "policy": fusion_config.policy,
+            **asdict(fusion_config),
             "self_included": True,
             "bandwidth_mode": "group_rms" if fusion_config.policy == "gaussian_l2" else None,
-            "adaptive_scale": fusion_config.adaptive_scale if fusion_config.policy == "gaussian_l2" else None,
-            "adaptive_bandwidth_floor": DEFAULT_ADAPTIVE_BANDWIDTH_FLOOR,
             "identity_tag": format_skinning_fusion_tag(fusion_config),
         },
         "skin_fusion_groups": skin_fusion_groups,

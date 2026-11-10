@@ -7,7 +7,7 @@ Puppeteer or UniRig release. The code is provided under the Apache License,
 Version 2.0 in `LICENSE`, as selected by the repository owner. Existing
 third-party attribution and license notices are retained.
 
-Production source provenance is recorded in `SOURCE_PROVENANCE.json`. Topology
+Production source provenance is recorded in `docs/source_provenance.json`. Topology
 and fusion were separated from the existing Puppeteer-based research tree;
 evaluation kernels were separated from the existing APF evaluator. The standalone
 code includes documented topology and interface adaptations; extraction hashes
