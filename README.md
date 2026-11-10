@@ -21,12 +21,20 @@ separate during deformation. Our method combines surface orientation partitionin
 density-weighted skinning fusion and vertex merging to refine these duplicates
 without relocating vertices or modifying the skeleton.
 
-```mermaid
-flowchart LR
-    A["Group by vertex position"] --> B["Partition by face orientation"]
-    B --> C["Fuse skinning weights"]
-    C --> D["Merge vertices and clean faces"]
-```
+<details>
+<summary>Why refine duplicate vertices?</summary>
+
+![Coincident duplicate vertices separating during pose deformation](docs/assets/observations.png)
+
+Duplicate vertices can coincide in the rest pose (a), yet separate after
+deformation (b) when their skinning weights differ.
+
+</details>
+
+![Refinement pipeline: grouping, surface orientation partitioning, density-weighted skinning fusion, merging and face removal](docs/assets/pipeline.png)
+
+*Refinement pipeline from the paper. Surface orientation partitioning preserves
+opposite-facing layers before skinning weights are fused and vertices are merged.*
 
 This CPU-only implementation takes a triangle mesh and existing skinning weights
 as input. No training or pretrained checkpoint is required. It provides KDE and
@@ -160,6 +168,7 @@ The research pipeline builds on [Puppeteer](https://github.com/Seed3D/Puppeteer)
 with evaluation conventions based on [UniRig](https://github.com/VAST-AI-Research/UniRig).
 Neither project is a runtime dependency of this package.
 
-Code is released under [Apache 2.0](LICENSE). The bundled example has its own
+Code is released under [Apache 2.0](LICENSE). [Paper figures](docs/assets/README.md)
+are separate from the software license. The bundled example has its own
 [asset and dataset licenses](examples/axl2_fish/README.md#source-and-license).
 See [NOTICE.md](NOTICE.md) for attribution.
