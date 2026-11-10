@@ -14,14 +14,14 @@ from .fusion import SkinningFusionConfig
 from .metrics import evaluate_mesh
 
 
-def _load_npz(path, keys):
+def _load_npz(path, keys, optional=()):
     with np.load(path, allow_pickle=False) as archive:
         missing = set(keys) - set(archive.files)
         if missing:
             raise ValueError("Missing NPZ fields: " + ", ".join(sorted(missing)))
         # Ignore unrelated optional attributes rather than loading object arrays.
         arrays = {key: archive[key] for key in keys}
-        for key in ("gt_skin", "matrix_local", "parents", "metadata_json"):
+        for key in ("gt_skin", "matrix_local", "parents", "metadata_json") + tuple(optional):
             if key in archive.files and key not in arrays:
                 arrays[key] = archive[key]
     return arrays
@@ -102,7 +102,8 @@ def main(argv=None):
         print(json.dumps(metadata, allow_nan=False))
     else:
         data = _load_npz(args.input, ("vertices", "faces", "gt_skin"))
-        refined = _load_npz(args.refined, ("vertices", "faces", "skin", "keep_indices"))
+        refined = _load_npz(args.refined, ("vertices", "faces", "skin", "keep_indices"),
+                            optional=("merged_old_to_new", "kept_source_face_indices"))
         has_skeleton = ("matrix_local" in data, "parents" in data)
         if any(has_skeleton) and not all(has_skeleton):
             raise ValueError("Provide both matrix_local and parents, or neither")

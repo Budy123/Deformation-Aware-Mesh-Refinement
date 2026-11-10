@@ -24,7 +24,9 @@ as the input geometry and skeleton.
 Provide both skeleton fields or neither when evaluating. Without a skeleton,
 the other metrics are available but DE is `null`. Ground truth is never fused
 to create an evaluation reference: the evaluator uses original GT rows at
-retained vertex indices, including for GT-input analysis.
+retained vertex indices for global metrics, including for GT-input analysis.
+Local metrics back-project output weights to their original target vertices;
+see [metric cohorts and SO comparisons](evaluation.md).
 
 Refinement/evaluation NPZ files are read with `allow_pickle=False`. The supplied
 AXL converter requires explicit trust before reading official object records.

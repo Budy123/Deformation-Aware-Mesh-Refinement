@@ -1,9 +1,10 @@
-"""Paper metrics evaluated against unmodified GT at retained original indices."""
+"""Paper metrics using original GT and explicit vertex/face correspondences."""
 
 import numpy as np
 
 from . import _metric_kernels as K
 from .core import validate_geometry, validate_skin
+from . import _review_metrics as R
 
 
 def _validated_skeleton(skeleton, joint_count):
@@ -22,6 +23,57 @@ def _validated_skeleton(skeleton, joint_count):
     except np.linalg.LinAlgError as exc:
         raise ValueError("rest transforms must be invertible") from exc
     return {"matrix_local": matrices, "parents": parents.astype(np.int64)}
+
+
+def _validate_pose_options(pose_count, pose_angle_deg, seed, sample_index):
+    if isinstance(pose_count, bool) or int(pose_count) != pose_count or pose_count <= 0:
+        raise ValueError("pose_count must be a positive integer")
+    if int(sample_index) != sample_index or sample_index < 0:
+        raise ValueError("sample_index must be a non-negative integer")
+    if int(seed) != seed or seed < 0:
+        raise ValueError("seed must be a non-negative integer")
+    if not np.isfinite(pose_angle_deg) or pose_angle_deg < 0:
+        raise ValueError("pose_angle_deg must be finite and non-negative")
+
+
+def evaluate_seam_opening(vertices, faces, gt_skin, refined_meshes, *, skeleton=None,
+                          pose_count=64, pose_angle_deg=30.0, seed=321, sample_index=0):
+    """Evaluate named outputs on the SAME surviving source edge-pair population.
+
+    Include every compared method in ``refined_meshes``. Values are original-
+    length-weighted, pose-averaged squared separation integrals, without sqrt.
+    Each state needs vertices/faces/skin/keep_indices/merged_old_to_new.
+    """
+    vertices, faces = validate_geometry(vertices, faces)
+    gt_skin = validate_skin(gt_skin, len(vertices))
+    _validate_pose_options(pose_count, pose_angle_deg, seed, sample_index)
+    if not isinstance(refined_meshes, dict) or not refined_meshes:
+        raise ValueError("refined_meshes must be a nonempty mapping of method names to outputs")
+    states, mappings = {}, {}
+    for name, state in refined_meshes.items():
+        if not isinstance(name, str) or not name:
+            raise ValueError("method names must be nonempty strings")
+        out_v, out_f = validate_geometry(state["vertices"], state["faces"])
+        skin = validate_skin(state["skin"], len(out_v), gt_skin.shape[1])
+        keep = np.asarray(state["keep_indices"])
+        if (keep.shape != (len(out_v),) or keep.dtype.kind not in "iu" or np.any(keep < 0) or
+                np.any(keep >= len(vertices)) or len(np.unique(keep)) != len(keep) or
+                not np.array_equal(vertices[keep], out_v)):
+            raise ValueError("keep_indices must identify distinct retained original vertices")
+        states[name] = dict(state, vertices=out_v, faces=out_f, skin=skin, keep_indices=keep)
+        mappings[name] = R.source_mapping(states[name], len(vertices))
+        if mappings[name] is None:
+            raise ValueError("SO comparisons require merged_old_to_new for every output")
+    poses = None
+    if skeleton is not None:
+        skeleton = _validated_skeleton(skeleton, gt_skin.shape[1])
+        poses = K._sample_pose_matrices(skeleton, pose_count=int(pose_count),
+            pose_angle_deg=float(pose_angle_deg), base_seed=int(seed) + int(sample_index) * 15991)
+    pairs, lengths = R.seam_source_pairs(vertices, faces, gt_skin)
+    result = R.seam_scores(pairs, lengths, states, mappings, skeleton, poses)
+    result.update(pose_count=int(pose_count), pose_angle_deg=float(pose_angle_deg),
+                  seed=int(seed), sample_index=int(sample_index))
+    return result
 
 
 def evaluate_mesh(vertices, faces, gt_skin, refined, *, skeleton=None,
@@ -44,14 +96,7 @@ def evaluate_mesh(vertices, faces, gt_skin, refined, *, skeleton=None,
         raise ValueError("keep_indices out of range")
     if len(np.unique(keep)) != len(keep) or not np.array_equal(vertices[keep], out_vertices):
         raise ValueError("refined vertices must match distinct retained original vertices")
-    if isinstance(pose_count, bool) or int(pose_count) != pose_count or pose_count <= 0:
-        raise ValueError("pose_count must be a positive integer")
-    if int(sample_index) != sample_index or sample_index < 0:
-        raise ValueError("sample_index must be a non-negative integer")
-    if int(seed) != seed or seed < 0:
-        raise ValueError("seed must be a non-negative integer")
-    if not np.isfinite(pose_angle_deg) or pose_angle_deg < 0:
-        raise ValueError("pose_angle_deg must be finite and non-negative")
+    _validate_pose_options(pose_count, pose_angle_deg, seed, sample_index)
 
     gt_retained = gt_skin[keep]
     skin = K._skin_l1_for_skin_pair(gt_retained, out_skin)
@@ -76,6 +121,7 @@ def evaluate_mesh(vertices, faces, gt_skin, refined, *, skeleton=None,
         b, _ = K._nearest_neighbor_query(out_vertices, vertices)
         result["cd"] = 0.5 * (float(np.sqrt(a).mean()) + float(np.sqrt(b).mean()))
         result["cd_squared"] = 0.5 * (float(a.mean()) + float(b.mean()))
+    poses = None
     if skeleton is not None:
         skeleton = _validated_skeleton(skeleton, gt_skin.shape[1])
         poses = K._sample_pose_matrices(skeleton, pose_count=int(pose_count),
@@ -86,4 +132,16 @@ def evaluate_mesh(vertices, faces, gt_skin, refined, *, skeleton=None,
         if deformation["deformation_pred_supported"]:
             result["de"] = deformation["deformation_pred_vertex_loss_l2"]
             result["de_mse"] = deformation["deformation_pred_vertex_loss_mse"]
+    state = dict(refined, vertices=out_vertices, faces=out_faces, skin=out_skin, keep_indices=keep)
+    mapping = R.source_mapping(state, len(vertices))
+    result.update(R.opposite_face_preservation(vertices, faces, state))
+    result.update(R.local_errors(vertices, faces, gt_skin, state, mapping, skeleton, poses))
+    result.update(so=None, so_source_pair_count=None, so_valid_pair_count=None,
+                  so_missing_pair_count=None, so_pair_scope="single_output_valid_pairs")
+    if mapping is not None:
+        pairs, lengths = R.seam_source_pairs(vertices, faces, gt_skin)
+        seam = R.seam_scores(pairs, lengths, {"output": state}, {"output": mapping}, skeleton, poses)
+        result.update(so=seam["methods"]["output"]["so"], so_source_pair_count=len(pairs),
+                      so_valid_pair_count=seam["common_pair_count"],
+                      so_missing_pair_count=seam["methods"]["output"]["missing_pair_count"])
     return result

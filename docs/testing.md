@@ -10,7 +10,7 @@ From the repository root in the installed environment:
 python -m unittest discover -s tests -v
 ```
 
-The 57-test suite covers the bundled real-mesh example, dataset conversion,
+The test suite covers the bundled real-mesh example, dataset conversion,
 grouping and surface orientation, KDE/Mean settings,
 face cleanup and mappings, original GT references, metric reductions,
 deterministic poses, YAML configuration and CLI precedence, input validation,
@@ -19,6 +19,9 @@ cover RigNet ZIP/extracted roots, AXL sparse/sharded records, explicit pickle
 trust, prediction attachment, source ordinals and rejected malformed inputs.
 The bundled-example tests verify numeric data, provenance hashes, the expected
 1,098-to-274 vertex reduction, face retention and complete 64-pose evaluation.
+Revision-metric tests cover original-vertex Local scores, OFPR face survival,
+SO's exact edge integral, three-copy pair selection, GT filtering, common-method
+coverage, merged/missing edges and CLI correspondence loading.
 
 The tested CPU environment is Python 3.8.10, NumPy 1.24.4, SciPy 1.10.1 and
 PyYAML 6.0.3, as pinned in [requirements.txt](../requirements.txt).
@@ -34,6 +37,13 @@ that numerical comparison. Later YAML/path changes did not change the kernels.
 
 These are bounded implementation checks, not a full-dataset rerun or evidence
 of improved reconstruction or deformation accuracy.
+
+The metric extension passes 68 tests. Local Skin L1/DE, OFPR and SO were also
+compared with the existing experiment functions on two-, three- and four-copy
+fixtures using 64 poses (absolute tolerance `1e-12`; source pairs and validity
+masks match exactly). All 20 pre-existing evaluator fields on the bundled Fish1
+input remain exactly unchanged. This is a bounded parity check, not a rerun of
+the paper tables.
 
 ## Provenance and licensing
 

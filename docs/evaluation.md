@@ -4,9 +4,11 @@
 
 ## Metrics
 
-The evaluator uses the original GT rows at retained vertex indices. It reports
-the following per-mesh metrics; average valid per-mesh scores to obtain dataset
-macro averages, rather than pooling every vertex across the dataset.
+Global Skin L1/DE use the original GT rows at retained vertex indices. The
+evaluator reports per-mesh scores and cohort counts. Global metrics and SO use
+valid per-mesh macro averages in dataset reporting. For the orientation ablation,
+pool OFPR's preserved/source pair counts and weight Local metric means by their
+respective valid original-target vertex counts, as in the existing benchmark.
 
 | JSON field | Definition |
 | --- | --- |
@@ -15,6 +17,10 @@ macro averages, rather than pooling every vertex across the dataset.
 | `fpr` | Output face count divided by original face count. |
 | `cd` | Half the sum of the two directed mean nearest-vertex Euclidean distances in the rest pose. |
 | `nme` | Count of undirected edges incident to a number of faces other than two, including boundary edges. |
+| `ofpr` | Fraction of original opposite-oriented duplicate face pairs retained as two distinct, noncollapsed faces. Pairs already sharing the same three vertex indices are excluded from the source population. |
+| `local_skin_l1` | Normalized per-joint L1 averaged over original vertices in exact-position groups split by surface orientation partitioning. Both GT/output rows must be nonzero. |
+| `local_de` | Mean Euclidean DE on the same original local vertices, using the same pose bank as global DE. |
+| `so` | Original-edge-length-weighted, pose-averaged integral of squared separation between corresponding edge copies. No square root is applied. |
 
 Additional diagnostic fields are not interchangeable with the paper columns:
 
@@ -25,8 +31,60 @@ Additional diagnostic fields are not interchangeable with the paper columns:
 - `cd_squared`: squared-distance counterpart, not `cd`.
 
 Undefined metrics are `null` with validity counts, not artificial zeros. Without
-a skeleton, only DE is unavailable. Use the pinned SciPy environment for float64
+a skeleton, DE, Local DE and SO are unavailable. Use the pinned SciPy environment for float64
 nearest-neighbor CD; the legacy float32 fallback is identified by `cd_backend`.
+
+### Local and face correspondences
+
+Local metrics assign each original target vertex the skinning weights at its
+`merged_old_to_new` output index, then compare against that vertex's original GT.
+Merged source copies remain separate observations; targets are not reduced to
+retained representatives. If cleanup removed any target's mapped output, the
+local score is `null` rather than an average over a smaller, changed cohort.
+`local_source_vertex_count` and `local_mapped_vertex_count` expose this coverage.
+OFPR uses `kept_source_face_indices` to track each original pair through cleanup;
+either face being removed makes that pair unpreserved.
+
+The CLI loads these mappings from ordinary `refine` outputs. Older/external
+outputs missing the required mappings retain the existing global scores, but
+the dependent new metrics are `null`. Missing cohorts are not scored as zero.
+
+### Seam Opening (SO)
+
+As in the revision experiment, source edge copies must have exactly matching
+rest-pose endpoints and normalized GT weights matching within absolute `1e-6`
+at both corresponding endpoints. This excludes intended differences in GT
+motion. For three or more copies, all individually compatible unordered pairs
+are included; compatibility is not transitively extended.
+
+For endpoint differences `a` and `b` after posing, the exact straight-edge
+integral is `(||a||² + a·b + ||b||²)/3`. Scores average over the pose bank and
+weight pairs by their original edge length. This adapts the interval discrepancy
+in Liu et al., [*Seamless: Seam erasure and seam-aware decoupling of shape from
+mesh resolution*](https://cragl.cs.gmu.edu/seamless/), 2017; GT filtering and the 3D edge/pose population are the
+experiment's additional choices, not claims about that reference's protocol.
+
+For method comparisons, use the **intersection of valid source pairs across all
+methods**. A pair is valid only when both mapped edges survive in the final mesh
+and their endpoint weights are valid. Two copies mapped to the same surviving
+edge are valid and score zero. A missing/collapsed edge is excluded, not assigned
+zero; preservation must be assessed separately with OFPR/qualitative results.
+
+`evaluate_mesh` and the CLI report a single output's eligible-pair score and
+coverage (`so_pair_scope="single_output_valid_pairs"`). Do not compare these
+scores directly if their eligible populations differ. To enforce a shared
+population, pass all already-refined outputs to the comparison API:
+
+```python
+from mesh_refinement import evaluate_seam_opening
+
+seam = evaluate_seam_opening(vertices, faces, gt_weights,
+    {"method_a": output_a, "method_b": output_b}, skeleton=skeleton,
+    seed=321, sample_index=original_record_ordinal)
+```
+
+This returns `common_pair_count`, `common_pair_length` and per-method SO/coverage.
+It evaluates supplied meshes; it does not run either baseline or change weights.
 
 ## Deformation poses
 
@@ -52,9 +110,9 @@ unchanged UniRig coordinate-MSE training loss.
 ## Reproduction scope
 
 The standalone package provides the main refinement, Mean fusion comparison,
-and the five metrics above. A [converter](data_preparation.md) reads the public
+and the metrics above. A [converter](data_preparation.md) reads the public
 RigNetv1/AXL 2.0 data. Apart from the single licensed Fish1 example, it does not
 bundle datasets or predictions. It also does not include
-Ma et al./Blender baselines, shared-weight experiments, SO, OFPR or Local
-Skin L1/DE or a no-partition ablation runner. The included Fish1 example checks
+Ma et al./Blender baselines, shared-weight experiments or a no-partition
+ablation runner. The included Fish1 example checks
 the pipeline; it does not reproduce full-dataset averages.

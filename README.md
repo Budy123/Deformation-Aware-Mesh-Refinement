@@ -38,7 +38,7 @@ opposite-facing layers before skinning weights are fused and vertices are merged
 
 This CPU-only implementation takes a triangle mesh and existing skinning weights
 as input. No training or pretrained checkpoint is required. It provides KDE and
-Mean fusion, plus Skin L1, DE, FPR, CD and NME evaluation.
+Mean fusion, plus Skin L1, DE, FPR, CD, NME, OFPR, Local Skin L1/DE and SO evaluation.
 
 ## Skinning Comparison
 

@@ -3,7 +3,23 @@
   "root_commit": "0e29ee6d3d74581b44c07b309ee6fda221a5509b",
   "production_commit": "944757ba63869a08acaaeb3186fafd94f9bfd656",
   "notes": "The standalone code is adapted from the recorded extraction. On 2026-11-08, topology switched to coincident-face unit-normal dot products below zero, removed the extra angle threshold, consolidated position grouping and removed unused private parameters. Fusion supports only paper self-included group-RMS KDE and uniform Mean; obsolete experimental branches and compatibility wrappers were removed. On 2026-11-10, bandwidth scale/floor and Gaussian exponent scale were centralized in SkinningFusionConfig, with optional safe YAML loading and JSON resolved-setting provenance; numerical defaults are unchanged. LBS uses its fixed 3D homogeneous-coordinate convention. Source paths, function lists and hashes below identify the original extraction, not runtime dependencies or byte identity of current adapted modules.",
+  "metric_extensions_date": "2026-11-11",
+  "metric_extensions_note": "SO, OFPR and Local Skin L1/DE adapt the original experiment functions below without importing research runners, Torch or dataset/model runtimes. SO comparisons use common surviving source pairs. Local scores back-project final weights to all original targets; unavailable mappings are reported rather than inferred.",
   "sources": [
+    {
+      "source": "artifacts/pasr_review_experiments_20261106/edge.py",
+      "sha256": "5ba5cb3111881cbeac4308eadf960c17bbdd5fe75389dd5cee7ef090a432222c",
+      "target": "mesh_refinement/_review_metrics.py",
+      "functions": ["source_pairs", "map_pairs", "integral", "score_pairs"],
+      "mode": "adapted: same GT tolerance, all-copy pairing, edge survival, exact integral, length/pose averaging; existing NumPy LBS replaces the Torch batching implementation"
+    },
+    {
+      "source": "Rig/Puppeteer/pasr_component_ablation_benchmark.py",
+      "sha256": "4d14bd61ae82e27565df852b56c07113a33727ba0676580d0f19091128656def",
+      "target": "mesh_refinement/_review_metrics.py",
+      "functions": ["_orientation_target_metrics", "_target_metrics", "_opposite_oriented_source_face_pairs", "_opposite_pair_stage_metrics"],
+      "mode": "adapted: original split-group vertices and source face pairs; use standalone orientation rule and explicit final correspondences"
+    },
     {
       "source": "Rig/Puppeteer/skinning_weight_fusion.py",
       "sha256": "2d72816438493cc3fed192461f04938e521a551b57f8960ee448a83ab16506c3",
