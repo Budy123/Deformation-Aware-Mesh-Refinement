@@ -106,6 +106,8 @@ For matched dataset evaluation, use the original evaluation ordinal as
 is relative to the supplied source sequence (sorted OBJ names or AXL records),
 not necessarily the ordinal of a separately filtered paper evaluation.
 See [evaluation](evaluation.md) for seeds and metric aggregation.
+For automatic batch execution and the recorded main-run ordinals, see
+[dataset evaluation](batch_evaluation.md).
 
 ## Full converter options
 

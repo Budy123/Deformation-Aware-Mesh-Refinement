@@ -116,3 +116,7 @@ bundle datasets or predictions. It also does not include
 Ma et al./Blender baselines, shared-weight experiments or a no-partition
 ablation runner. The included Fish1 example checks
 the pipeline; it does not reproduce full-dataset averages.
+
+[Dataset evaluation](batch_evaluation.md) provides batch execution and aggregation,
+including the recorded paper sample IDs and pose ordinals. The renderer in
+[visualization](visualization.md) previews supplied weights without inference.

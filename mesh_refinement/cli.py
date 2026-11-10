@@ -73,7 +73,46 @@ def main(argv=None):
     evaluate.add_argument("--seed", type=int, default=321)
     evaluate.add_argument("--sample-index", type=int, default=0,
                           help="Original main-run ordinal for the per-asset pose seed")
+    batch = sub.add_parser("run-dataset", help="Refine/evaluate a prepared dataset manifest and aggregate metrics")
+    batch.add_argument("--manifest", type=Path, required=True)
+    batch.add_argument("--input-dir", type=Path, help="Prepared NPZ root; defaults to manifest directory")
+    batch.add_argument("--output-dir", type=Path, required=True, help="Fresh run directory")
+    batch.add_argument("--config", type=Path)
+    batch.add_argument("--fusion", choices=("kde","mean"), default=None)
+    batch.set_defaults(bandwidth_scale=None)
+    batch.add_argument("--workers", type=int, default=1)
+    batch.add_argument("--pose-count", type=int, default=64)
+    batch.add_argument("--pose-angle-deg", type=float, default=30.)
+    batch.add_argument("--seed", type=int, default=321)
+    aggregate = sub.add_parser("aggregate", help="Combine completed dataset splits using per-mesh records")
+    aggregate.add_argument("--runs", type=Path, nargs='+', required=True)
+    aggregate.add_argument("--output", type=Path, required=True)
+    render = sub.add_parser("render", help="Render original/refined NPZs as PNG and GIF; no inference")
+    render.add_argument("--input", type=Path, required=True)
+    render.add_argument("--refined", type=Path, required=True)
+    render.add_argument("--output-dir", type=Path, required=True)
+    render.add_argument("--view", choices=("front","side"), default="front")
+    render.add_argument("--motion", type=Path, help="Optional NPZ with rotation vectors rotvec[frames,J,3], radians")
+    render.add_argument("--frames", type=int, default=48)
+    render.add_argument("--fps", type=int, default=12)
+    render.add_argument("--seed", type=int, default=321)
+    render.add_argument("--angle-deg", type=float, default=30.)
     args = parser.parse_args(argv)
+    if args.command == "run-dataset":
+        from .batch import run_dataset
+        result = run_dataset(args.manifest,args.output_dir,input_dir=args.input_dir,
+            fusion_config=_fusion_config(args),workers=args.workers,seed=args.seed,
+            pose_count=args.pose_count,pose_angle_deg=args.pose_angle_deg)
+        print(json.dumps(result,allow_nan=False)); return
+    if args.command == "render":
+        from .visualize import render_comparison
+        result=render_comparison(args.input,args.refined,args.output_dir,view=args.view,
+            motion=args.motion,frames=args.frames,fps=args.fps,seed=args.seed,angle_deg=args.angle_deg)
+        print(json.dumps(result,allow_nan=False)); return
+    if args.command == "aggregate":
+        from .batch import aggregate_runs
+        result=aggregate_runs(args.runs,_fresh_path(args.output))
+        print(json.dumps(result,allow_nan=False)); return
     # Check before loading/computing; exclusive creation below also prevents races.
     output = _fresh_path(args.output)
     runtime = {"release_version": __version__, "python": platform.python_version(),

@@ -131,6 +131,11 @@ nearest reference vertices. Its JSON report includes the producer metadata in
 
 ## CLI options
 
+The dataset runner/aggregator and renderer have separate complete option
+references in [dataset evaluation](batch_evaluation.md#full-cli-reference) and
+[visualization](visualization.md#full-cli-reference). They use the same numeric
+NPZs and do not run model inference.
+
 Both commands also accept `-h` / `--help`.
 
 | Command | Option | Default / behavior |

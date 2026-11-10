@@ -1,0 +1,601 @@
+{
+  "description": "Evaluated IDs and recorded pose-seed ordinals; no data or model weights.",
+  "sources": [
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00000_000000_000500",
+      "record_count": 500,
+      "records_sha256": "63b2c4aa7a1d4adcc943a1fed6c65eea1ac58b5d6b8a3cc0977aec994ffe0e14"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00001_000500_001000",
+      "record_count": 500,
+      "records_sha256": "f747c5ee80b05d6df82e251f965c3ec42f648e0b15c1ac7ced4a32a6eba2b8ba"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00002_001000_001500",
+      "record_count": 500,
+      "records_sha256": "39dbe22421fa7c0e56d09e4cfd522be86dd22e3d6965f7df7d173a1d3fc27cde"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00003_001500_002000",
+      "record_count": 500,
+      "records_sha256": "644a482d92d1ef78d14680ada22c6c91d9eb13f367c2ad9b8c4fb38d9a22d373"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00004_002000_002500",
+      "record_count": 500,
+      "records_sha256": "34ca8af6c55b1cfa5a275f7fda92f43a338257da047bdfb0d5097beb383b6ce7"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00005_002500_003000",
+      "record_count": 500,
+      "records_sha256": "7b45dfdb30afab324b9e87164a1217bad0954592b26e3290dea605fd5e469e1f"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00006_003000_003500",
+      "record_count": 500,
+      "records_sha256": "2ba4a0fff0fdb1105b34dcbb5b54006fd654103c9a6be49bf38fd8be78ee6d62"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00007_003500_004000",
+      "record_count": 500,
+      "records_sha256": "79b9ac49ee1b1af955dd6e89b7cdb52e77ceeaaa013afd4b1bd5fb9542e80fc4"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00008_004000_004500",
+      "record_count": 500,
+      "records_sha256": "ea014f12aa0d8d87ae30f751f27f857f18cf0334f4a87fc4dee57368fd0da7ba"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00009_004500_005000",
+      "record_count": 500,
+      "records_sha256": "360cc320a792afcaefebe56c1b96784170e159309cdb9cacc10befece0921368"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00010_005000_005500",
+      "record_count": 500,
+      "records_sha256": "a63706b991733b41644bf7f4eeb3470a5a067b6dd5d92a21bb987099e70ab48d"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00011_005500_006000",
+      "record_count": 500,
+      "records_sha256": "d003bb9097ac20507d4f4880ac77a4a649e8ae53f64d000f44a630b667f30866"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00012_006000_006500",
+      "record_count": 500,
+      "records_sha256": "e2cb428fe7b449b77b4a617eea4e8c6f7090a30e8fa6a1929c1a2476fd63d20b"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00013_006500_007000",
+      "record_count": 500,
+      "records_sha256": "395975cd6ad92e58999ecf787df99f1e5fc7241a3b0557a4f373100ed894340c"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00014_007000_007500",
+      "record_count": 500,
+      "records_sha256": "4ab2a7b8020fdfc5baa9ac285c4fe58c067cb0c3242afec304e1eca1dd7e5c38"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00015_007500_008000",
+      "record_count": 500,
+      "records_sha256": "92f98b31b5ce99b3e340d34a187025fee92dba1ab0ad02c5542b106aeb1f9656"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00016_008000_008500",
+      "record_count": 500,
+      "records_sha256": "b0fc7f6ef75c0df64e2a844d8173c85eb612e74c7d138ef993a20d8b07c59a36"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00017_008500_009000",
+      "record_count": 500,
+      "records_sha256": "779b1d156d0a37ba6c29f5f5f453704adf93017ffe10c6ff0255bc3525f412a3"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00018_009000_009500",
+      "record_count": 500,
+      "records_sha256": "4fd3cf0dbacd1ec6b0da47af8e6817254d10038ea0787bc398f534689f393faa"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00019_009500_010000",
+      "record_count": 500,
+      "records_sha256": "9dc8cb0fdb8836d04126e526f145fcdd665b0ebd3b15d5a30ded263a85b916c9"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00020_010000_010500",
+      "record_count": 500,
+      "records_sha256": "2a7265d8e4500b7663b106f42b9125b636a8207efe6bdf81c166371485bea671"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00021_010500_011000",
+      "record_count": 500,
+      "records_sha256": "c1ae2e0ce574b6e560dd9a472e504b65e661aa26cc80f1053a5155156d1ef165"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00022_011000_011500",
+      "record_count": 500,
+      "records_sha256": "c6b1f47734854f899b12f4b339b2f15cf1ccc7c4637cdae81425d4041f916c36"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00023_011500_012000",
+      "record_count": 500,
+      "records_sha256": "4dd6df2e5ec7d48ff0fae258a0c946369a7a9a5539e4fb172b007b43cccf36a4"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00024_012000_012500",
+      "record_count": 500,
+      "records_sha256": "198be1e2653c7ce045c786a643ad752af2bba823078c2ea36af3341a4fe78b2f"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00025_012500_013000",
+      "record_count": 500,
+      "records_sha256": "d6d31f1ae01c454783fac3725b4d2bb4b05afdf93e463ff300ec3eb26bb8efc1"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00026_013000_013500",
+      "record_count": 500,
+      "records_sha256": "e107b4353d01abd35a610da466401091bc444ff952ff0562a97d4d459da343af"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00027_013500_014000",
+      "record_count": 500,
+      "records_sha256": "f336b1eb85626d7351da601a5d64aceabe13e6680c3007a50464dd1e2ccc6efc"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00028_014000_014500",
+      "record_count": 500,
+      "records_sha256": "c90a7feb00ae8f18a5d6741bf63a5270e0875c48020fd0da1676c237b37d453e"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00029_014500_015000",
+      "record_count": 500,
+      "records_sha256": "31b3e9950d9058c67ec2d9dde38cbb2dde797b109d60008dc99b2248e422885a"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00030_015000_015500",
+      "record_count": 500,
+      "records_sha256": "d9eda12402cd706cd8a2891df79b71f0af8a4c7c3672c519b84d514df78ff039"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00031_015500_016000",
+      "record_count": 500,
+      "records_sha256": "bddc2bc547decd2ebd34624ff8c35f685b482822fae5ecc9fd9f0b2fb25e4393"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00032_016000_016500",
+      "record_count": 500,
+      "records_sha256": "9de5d47fcd127c58a90ce087c97447383f62d520a8e8ec742df6cb7ac90c40b0"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00033_016500_017000",
+      "record_count": 500,
+      "records_sha256": "e654009721b7d26939b2d66c1538d65b4c1537356ada37862ac56fbbfcf1fa61"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00034_017000_017500",
+      "record_count": 500,
+      "records_sha256": "0c571d87ea5fa2b576caa77262708ecbbdbb21dbe1af1dd552f79e09924d372e"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00035_017500_018000",
+      "record_count": 500,
+      "records_sha256": "68905b94e431d1769eae2379f5c160629b9b67e5104438925da493a10d282be5"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00036_018000_018500",
+      "record_count": 500,
+      "records_sha256": "e7f74c37cbfda67fa6d3ee16183cd546bd3e789f96c370c1fcbb9500b32a9558"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00037_018500_019000",
+      "record_count": 500,
+      "records_sha256": "1ac1ae111fc791ed5902ee678e19a48d8864b290921d096583659d78d3071077"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00038_019000_019500",
+      "record_count": 500,
+      "records_sha256": "0f0591b1bbbb0970abc21de845a2b83546e9b7235ceb6e596695801ba35ceab6"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00039_019500_020000",
+      "record_count": 500,
+      "records_sha256": "1d4a63b7372cdc52b9ec10911fbe4c2bb9c94f404152edeefeb864b06fb75228"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00040_020000_020500",
+      "record_count": 500,
+      "records_sha256": "ae8d359bc33ed9d5412050c3870b7867059776cdc33d947d75d872e949c09191"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00041_020500_021000",
+      "record_count": 500,
+      "records_sha256": "f0d0ae9391dec1ceb43511d044ad2a782cefceffe4d34636498d0db4421df9d2"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00042_021000_021500",
+      "record_count": 500,
+      "records_sha256": "a2a7c036644e7568a2cdc343cc7845d8664be5b7d2c4a0cbfb9a59f4f1ef8806"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00043_021500_022000",
+      "record_count": 500,
+      "records_sha256": "afaa0ed0598976b4e5b90b55eb296bdfad320de134d71959729307b3b69adcbd"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00044_022000_022500",
+      "record_count": 500,
+      "records_sha256": "c00650a95d8e928d724fd7582edb8f8170b730015dc37e8c59fd1f74a43e63b2"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00045_022500_023000",
+      "record_count": 500,
+      "records_sha256": "74fe31235e94a6e1078a627b559d5562356a32fd6cde2657ca270c79cbdc68ef"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00046_023000_023500",
+      "record_count": 500,
+      "records_sha256": "1ae94f1fe83b619935f371f545248cd1a5aba5aeae432935b1882bba8d42eedf"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00047_023500_024000",
+      "record_count": 500,
+      "records_sha256": "826b89d34e00643408eca2b98918243a3f7bdf4a0f08f36879f330f168c437a4"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00048_024000_024500",
+      "record_count": 500,
+      "records_sha256": "a712fbc94af74d6bc0a7d72242ae6409b7022437946c200e3e9a3c83d223faa0"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00049_024500_025000",
+      "record_count": 500,
+      "records_sha256": "c2b9505336f5488ebd8702402e2e0f2ad9d4b4c734ce25de46a08606fde7533d"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00050_025000_025500",
+      "record_count": 500,
+      "records_sha256": "9363a2f4b6ac59e393df7c2df04916370bf69c7997e3bd1a443690b10a8d134e"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00051_025500_026000",
+      "record_count": 500,
+      "records_sha256": "cb2f6a0a9759b120881f40f05885d4aff7cec6918fc3193729e4cfac4ccef545"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00052_026000_026500",
+      "record_count": 500,
+      "records_sha256": "e0c2d095152a92a620200a2f8aea15907b9ad97b750b0f62a747ec756cca9efd"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00053_026500_027000",
+      "record_count": 500,
+      "records_sha256": "470280bd7c5da81ba2519c582ef6ea294d85196a220411dfc1449bbc05bd8e47"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00054_027000_027500",
+      "record_count": 500,
+      "records_sha256": "b911fcb366e40c6ddaa2318f0148a8a886d6908e5551aa49cb02361d2c4164b2"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00055_027500_028000",
+      "record_count": 500,
+      "records_sha256": "7c7b04199465df21c383a0105af38ef2d7db0fa04d91379c735d9547a7432fd7"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00056_028000_028500",
+      "record_count": 500,
+      "records_sha256": "dfeb8d1f55785df72617efc7932ffe11c592e1d4d04e95f470debd407743de0b"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00057_028500_029000",
+      "record_count": 500,
+      "records_sha256": "ee4175f1c9369b21513a473c0b38fc42bb0bd3b7b56629bd37078ebcac4797b0"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00058_029000_029500",
+      "record_count": 500,
+      "records_sha256": "9ed950b7b2e369f8539935a50f38875deb21c4437a5c0105a5973f933e661fd9"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00059_029500_030000",
+      "record_count": 500,
+      "records_sha256": "1d0651f0ba199dee6d1250e875b5b1b716b7a4607d55b90e6e8da0219aeffff5"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00060_030000_030500",
+      "record_count": 500,
+      "records_sha256": "b6f9a01a1f44abde76866d263d4604f364fb8758efee38784772095310427705"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00061_030500_031000",
+      "record_count": 500,
+      "records_sha256": "b9804c302cf648827b2d4f373c4b257f80195524a01d509e649b03b23960333f"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00062_031000_031500",
+      "record_count": 500,
+      "records_sha256": "9e2a2f0b97b46dd0f94aefded56055927d8e067b55535eedd750cf46b07386c9"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00063_031500_032000",
+      "record_count": 500,
+      "records_sha256": "645a4fe934846aa49795ac72e51a6f157b9be94d28a21abd50f88ed7e72171da"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00064_032000_032500",
+      "record_count": 500,
+      "records_sha256": "c0da8e294648ae0298b23416f4df35205a4686e0f151f68f91bd4014616e6826"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00065_032500_033000",
+      "record_count": 500,
+      "records_sha256": "32f745b47c97a8b309d2b455c59e704b681f6280735a9663367ec7f97a04949a"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00066_033000_033500",
+      "record_count": 500,
+      "records_sha256": "6d7b1974a76e7685106ee6210f1ea1b83792f3213637584374ef08058f2921b5"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00067_033500_034000",
+      "record_count": 500,
+      "records_sha256": "ed3f31bd6083a76cab20471c29b8e4eaff29755d5296a39e94c4873494269fb6"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00068_034000_034500",
+      "record_count": 500,
+      "records_sha256": "55fd637283ba30b9c1896bda816b15ba9d327e540e973baac44dc2fc30ea6c46"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00069_034500_035000",
+      "record_count": 500,
+      "records_sha256": "0ec115bb2b5ccb43f7ad3e76edf5ac0c98903e12f0e9210635395937123866f9"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00070_035000_035500",
+      "record_count": 500,
+      "records_sha256": "14fc04879d0bf6c9e129aef6da9c0833ab3017380f7ccae0f90bf621d1daa3e2"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00071_035500_036000",
+      "record_count": 500,
+      "records_sha256": "bbc6945deb8c3d9ac41d232aa335531f9be3d2f90cd9270c40fc36b612147e74"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00072_036000_036500",
+      "record_count": 500,
+      "records_sha256": "baa754ba8074f70845cd3f234265836974d73657d0cd56f74a2c05188c0e6c26"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00073_036500_037000",
+      "record_count": 500,
+      "records_sha256": "9f2997ab5d95d9d7e209bd8cd9b700e1c106a1b31e0f12bde667a96b27060c3e"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00074_037000_037500",
+      "record_count": 500,
+      "records_sha256": "1c8590a503a453a1d9562d29fb2dbe1ce358e4bc702921841a3eef2517def362"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00075_037500_038000",
+      "record_count": 500,
+      "records_sha256": "53d85b604e6bdb1d42e33bddb50ff420cee1039f14d9f1b2acc99afcc83386c6"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00076_038000_038500",
+      "record_count": 500,
+      "records_sha256": "2fae2655a97416c9b807323d5bf77550251126fa140eca65ba36d4a5e31d7916"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00077_038500_039000",
+      "record_count": 500,
+      "records_sha256": "a48884e5c30aa7fa5e20ea14824b09edbb6fbeed787c52e4ccdad0651d57f2df"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00078_039000_039500",
+      "record_count": 500,
+      "records_sha256": "81dd3bc86ad57906561ff7c8669881111819aee938b3848ac37cb085580695fa"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00079_039500_040000",
+      "record_count": 500,
+      "records_sha256": "1a8382bd955c4c55ce3b0ce24c081b3cd5cbff143a0093d3793f88749e390de0"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00080_040000_040500",
+      "record_count": 500,
+      "records_sha256": "c5092189a4a77b8cdb87a03441c24dad15daeddb256c82e4ac556e0935b77130"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00081_040500_041000",
+      "record_count": 500,
+      "records_sha256": "89f9473a079e460b331c623adb664ebf6051c32d5ea1db8640a676791bf24672"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00082_041000_041500",
+      "record_count": 500,
+      "records_sha256": "c85b0d9e6225adee577a9e24035700badef9c29e7124371042206dd87d05ae4e"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00083_041500_042000",
+      "record_count": 500,
+      "records_sha256": "ddbaa96a96187838e92d7929ad5cda34272f02ee7d9d6d48817f9b9719a8007e"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00084_042000_042500",
+      "record_count": 500,
+      "records_sha256": "8d4734024b23bfe2662f2b9d688029b9e2e9ec01e6ac557d56c0825ee1bc1827"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00085_042500_043000",
+      "record_count": 500,
+      "records_sha256": "3ef62d388b5f570036ec2a7693ede347bc9c731d6ce99869158d7bab5db0b380"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00086_043000_043500",
+      "record_count": 500,
+      "records_sha256": "b8caf088f909d67ba2281740143bb412e11971a05472d4e80e285ee3bb5f2f14"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00087_043500_044000",
+      "record_count": 500,
+      "records_sha256": "ad407206df1ae790b044ec3fc927546ebf1ab816363bcaeeeb56ea9632159664"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00088_044000_044500",
+      "record_count": 500,
+      "records_sha256": "ddd8e2a42ed476cb0fb13dc3ce481ee6c20ad464257f38d7965dda853c4bfa81"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00089_044500_045000",
+      "record_count": 500,
+      "records_sha256": "17beb8e5baaf934668f5280b257b553538871379b64f0d9f9a9ee619e78417c9"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00090_045000_045500",
+      "record_count": 500,
+      "records_sha256": "153d48aa4c1605cb6d0de3daf5e229a885c7d37355f41446289b752ab276a8e0"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00091_045500_046000",
+      "record_count": 500,
+      "records_sha256": "69b644c4fb00cd36757eea3e8b3d4437ce04000bd3d5fea67dfdc9bd24becdd8"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00092_046000_046500",
+      "record_count": 500,
+      "records_sha256": "9521dcaf6929f9c9b95e637d459eb533ef611763bdad2798fa466d15b779cc61"
+    },
+    {
+      "split": "axl2_train",
+      "partition": "axl2_train/shard_00093_046500_046638",
+      "record_count": 138,
+      "records_sha256": "63474ebc4d3f7e4f18efd96291e9d78d1e75a1ea46139d5a3ba46eaf35681a97"
+    },
+    {
+      "split": "axl2_test",
+      "partition": "axl2_test",
+      "record_count": 1997,
+      "records_sha256": "2ed56315169907ef9b3a634cf681f9f0b98142b515ee8f3c0e7154ba4efbf2a9"
+    },
+    {
+      "split": "rignetv1",
+      "partition": "rignetv1",
+      "record_count": 2703,
+      "records_sha256": "7c2383027ecafc1ea43388bdec4506165d732e8ee663b03cb711d19c7ea71859"
+    }
+  ],
+  "manifests": [
+    {
+      "file": "axl2_train.json.gz",
+      "records": 46638,
+      "bytes": 1409294,
+      "sha256": "6df68a53b8434eee6fa997a992ed42471fbd8644b118dd51acf1b4f46da6652d"
+    },
+    {
+      "file": "axl2_test.json.gz",
+      "records": 1997,
+      "bytes": 60485,
+      "sha256": "da8cbbc906ca2f4f2e9a6dd0ca78538dc3e3258fd23ff9fa2503ed2730a9f5be"
+    },
+    {
+      "file": "rignetv1.json.gz",
+      "records": 2703,
+      "bytes": 22882,
+      "sha256": "1afa1a9a224fb3419702443bb2a1891b15ddd438f12ec369e657e83182750e1e"
+    }
+  ]
+}

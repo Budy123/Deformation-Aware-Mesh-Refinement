@@ -120,6 +120,34 @@ this is a GT-input run, not the paper's predicted-input evaluation.
 See [data preparation](docs/data_preparation.md) for prediction setup, a complete
 single-mesh example and output details. For other data, see the [NPZ schema](docs/usage.md#input-data).
 
+## Dataset Evaluation
+
+After data preparation, refine, evaluate and aggregate all listed meshes:
+
+```bash
+python -m mesh_refinement run-dataset \
+  --manifest data/prepared/axl2_test/manifest.json \
+  --output-dir outputs/axl2_test --config config/fusion_config.yaml
+```
+
+The run writes per-mesh outputs, a CSV and a dataset summary. For the paper's
+evaluated IDs and pose ordinals, use the supplied [evaluation manifests](config/evaluation/README.md).
+See [dataset evaluation](docs/batch_evaluation.md) for parallel workers and
+combining train/test results without averaging split averages.
+
+## Visualize Your Output
+
+```bash
+python -m pip install ".[visualization]"
+python -m mesh_refinement render \
+  --input examples/axl2_fish/input.npz --refined outputs/fish/refined.npz \
+  --output-dir outputs/fish/visualization --view side
+```
+
+This produces a side-by-side PNG/GIF using the supplied weights and identical
+motion/camera, with light wireframes and backface culling. It does not rerun
+inference. See [visualization](docs/visualization.md) for custom motion.
+
 ## Configuration
 
 Edit [config/fusion_config.yaml](config/fusion_config.yaml) to change fusion
@@ -145,6 +173,8 @@ licenses/           Retained third-party licenses
 | [Data preparation](docs/data_preparation.md) | Dataset downloads, conversion and predicted/GT weight inputs |
 | [Usage](docs/usage.md) | Input/output formats, configuration, Python API and CLI options |
 | [Evaluation](docs/evaluation.md) | Metric definitions, pose sampling and reproduction scope |
+| [Dataset evaluation](docs/batch_evaluation.md) | Batch execution, recorded populations, seeds and dataset aggregation |
+| [Visualization](docs/visualization.md) | Original/refined PNG/GIF comparison and supplied motion |
 | [Testing](docs/testing.md) | Test commands, numerical checks and source provenance |
 
 Apart from the single licensed example, datasets and predictions are not included.
