@@ -8,6 +8,7 @@
   <a href="#overview">Overview</a> ·
   <a href="#installation">Installation</a> ·
   <a href="#quick-start">Quick Start</a> ·
+  <a href="#data-preparation">Data Preparation</a> ·
   <a href="#documentation">Documentation</a>
 </p>
 
@@ -68,9 +69,33 @@ python -m mesh_refinement evaluate \
 The commands produce a refined NPZ and a JSON metric report. Choose fresh output
 paths when repeating a run; existing files are not overwritten.
 
-For your own mesh, prepare a numeric NPZ with `vertices`, `faces` and predicted
-`skin`. Evaluation additionally requires original `gt_skin`; DE also requires
-the skeleton. See [data preparation and usage](docs/usage.md) for the full schema.
+## Data Preparation
+
+Download the datasets from their official releases:
+
+| Dataset | Download | Converter input |
+| --- | --- | --- |
+| RigNetv1 | [Preprocessed data](https://drive.google.com/file/d/1-B6hJ4423rw1LrTForHp7oaG5qRAbJx3/view) ([source](https://github.com/zhan-xu/RigNet#data)) | ZIP or extracted folder with `obj_remesh/` and `rig_info_remesh/` |
+| AXL 2.0 | [Preprocessed NPZ files](https://huggingface.co/datasets/Seed3D/Articulation-XL2.0/tree/main) | `articulation_xlv2_train.npz` or `articulation_xlv2_test.npz` |
+
+Convert the downloaded data together with the corresponding predicted weights:
+
+```bash
+python scripts/prepare_data.py --dataset rignetv1 \
+  --input data/ModelResource_RigNetv1_preproccessed.zip \
+  --predictions-dir predictions/rignetv1 --output-dir data/prepared/rignetv1
+
+python scripts/prepare_data.py --dataset axl2 \
+  --input data/articulation_xlv2_test.npz --trust-axl-pickle \
+  --predictions-dir predictions/axl2_test --output-dir data/prepared/axl2_test
+```
+
+The converter writes numeric per-mesh NPZ files ready for `refine` and `evaluate`.
+Predictions use Puppeteer's `<sample_id>_skin.npy` format. To use dataset GT
+weights as input instead, replace `--predictions-dir ...` with `--use-gt-weights`;
+this is a GT-input run, not the paper's predicted-input evaluation.
+See [data preparation](docs/data_preparation.md) for prediction setup, a complete
+single-mesh example and output details. For other data, see the [NPZ schema](docs/usage.md#input-data).
 
 ## Configuration
 
@@ -84,7 +109,7 @@ Use `--fusion mean` to compare uniform averaging with the same refinement pipeli
 config/             YAML settings
 docs/               Usage, evaluation and testing reference
 mesh_refinement/    Refinement, fusion, metrics and CLI
-scripts/            Synthetic demo generation
+scripts/            Dataset conversion and synthetic demo
 tests/              Unit and CLI regression tests
 licenses/           Retained third-party licenses
 ```
@@ -93,6 +118,7 @@ licenses/           Retained third-party licenses
 
 | Guide | Contents |
 | --- | --- |
+| [Data preparation](docs/data_preparation.md) | Dataset downloads, conversion and predicted/GT weight inputs |
 | [Usage](docs/usage.md) | Input/output formats, configuration, Python API and CLI options |
 | [Evaluation](docs/evaluation.md) | Metric definitions, pose sampling and reproduction scope |
 | [Testing](docs/testing.md) | Test commands, numerical checks and source provenance |

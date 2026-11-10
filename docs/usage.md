@@ -4,6 +4,9 @@
 
 ## Input data
 
+For RigNetv1 and AXL 2.0, use the supplied [dataset converter](data_preparation.md)
+instead of constructing these arrays manually.
+
 The package operates on numeric NPZ files containing a triangle mesh and
 precomputed skinning weights. It does not load FBX files or run an auto-rigging
 model. Prepare predictions separately, with the same vertex and joint ordering
@@ -23,8 +26,9 @@ the other metrics are available but DE is `null`. Ground truth is never fused
 to create an evaluation reference: the evaluator uses original GT rows at
 retained vertex indices, including for GT-input analysis.
 
-NPZ files are read with `allow_pickle=False`. Object-array dataset archives
-must be converted through trusted preparation code first. Zero-sum skin rows
+Refinement/evaluation NPZ files are read with `allow_pickle=False`. The supplied
+AXL converter requires explicit trust before reading official object records.
+Zero-sum skin rows
 are handled by validity masks and fallbacks; they are not valid GT annotations.
 
 ## Refinement and evaluation

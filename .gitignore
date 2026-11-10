@@ -7,6 +7,8 @@ __pycache__/
 build/
 dist/
 outputs/
+data/
+predictions/
 *.egg-info/
 # Keep the standalone release complete even inside the research root's broad
 # ignores for text, JSON and test files.

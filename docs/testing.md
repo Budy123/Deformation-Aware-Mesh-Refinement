@@ -10,10 +10,12 @@ From the repository root in the installed environment:
 python -m unittest discover -s tests -v
 ```
 
-The 43-test suite covers grouping and surface orientation, KDE/Mean settings,
+The 55-test suite covers dataset conversion, grouping and surface orientation, KDE/Mean settings,
 face cleanup and mappings, original GT references, metric reductions,
 deterministic poses, YAML configuration and CLI precedence, input validation,
-unsafe YAML-tag rejection, JSON metadata and overwrite refusal.
+unsafe YAML-tag rejection, JSON metadata and overwrite refusal. Converter tests
+cover RigNet ZIP/extracted roots, AXL sparse/sharded records, explicit pickle
+trust, prediction attachment, source ordinals and rejected malformed inputs.
 
 The tested CPU environment is Python 3.8.10, NumPy 1.24.4, SciPy 1.10.1 and
 PyYAML 6.0.3, as pinned in [requirements.txt](../requirements.txt).

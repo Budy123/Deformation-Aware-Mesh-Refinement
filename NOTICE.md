@@ -12,6 +12,8 @@ and fusion were separated from the existing Puppeteer-based research tree;
 evaluation kernels were separated from the existing APF evaluator. The standalone
 code includes documented topology and interface adaptations; extraction hashes
 identify the original sources, not byte identity of every current function.
+The dataset converter adapts the same local RigNet OBJ/rig and AXL sparse-weight
+loading conventions; it is independent of the original model runtimes.
 The source-tree Puppeteer license is
 retained verbatim in `licenses/Puppeteer-APACHE-2.0.txt`.
 

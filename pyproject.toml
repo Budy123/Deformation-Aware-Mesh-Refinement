@@ -22,6 +22,7 @@ packages = ["mesh_refinement"]
 
 [tool.setuptools.data-files]
 "share/mesh-refinement" = ["README.md", "LICENSE", "NOTICE.md"]
-"share/mesh-refinement/docs" = ["docs/usage.md", "docs/evaluation.md", "docs/testing.md", "docs/source_provenance.json"]
+"share/mesh-refinement/docs" = ["docs/usage.md", "docs/data_preparation.md", "docs/evaluation.md", "docs/testing.md", "docs/source_provenance.json"]
+"share/mesh-refinement/scripts" = ["scripts/prepare_data.py", "scripts/make_example.py"]
 "share/mesh-refinement/config" = ["config/fusion_config.yaml"]
 "share/mesh-refinement/licenses" = ["licenses/Puppeteer-APACHE-2.0.txt"]
