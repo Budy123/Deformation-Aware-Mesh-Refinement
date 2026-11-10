@@ -21,3 +21,9 @@ The skin-weight metric uses the UniRig-style vertex/joint entry mean. The pose
 sampling and paired LBS follow the existing local evaluator's UniRig-style
 approach. DE here is mean Euclidean distance; it is not UniRig's coordinate-MSE
 training loss. UniRig model code, weights and datasets are not bundled.
+
+The single example under examples/axl2_fish/ uses Quaternius Fish1 (CC0 1.0)
+via Articulation-XL2.0 (CC BY 4.0), with cached Puppeteer predictions. Its numeric
+derivative and preview retain CC BY 4.0 attribution, separately from this
+repository's Apache-licensed code. See examples/axl2_fish/README.md for source
+credits, license links and modifications. Full datasets are not bundled.

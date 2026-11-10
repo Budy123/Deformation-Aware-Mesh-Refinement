@@ -4,7 +4,8 @@
 
 The converter reads the public formats used by our experiments. You do not
 need to construct mesh arrays or manually rename NPZ fields. Download the
-data from the original providers; datasets are not redistributed here.
+data from the original providers; full datasets are not redistributed here.
+For a download-free first run, use the bundled [Fish1 example](../examples/axl2_fish/README.md).
 
 ## 1. Download
 

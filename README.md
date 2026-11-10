@@ -50,24 +50,28 @@ An existing Python environment can also be used. CUDA and Blender are not requir
 
 ## Quick Start
 
-Run the included synthetic demo without downloading a dataset:
+Run the bundled [AXL 2.0 Fish1 example](examples/axl2_fish/README.md), with real
+skinning predictions and a GT reference. No dataset download or model inference
+is needed:
 
 ```bash
-python scripts/make_example.py --output outputs/demo/input.npz
-
 python -m mesh_refinement refine \
-  --input outputs/demo/input.npz \
-  --output outputs/demo/refined.npz \
+  --input examples/axl2_fish/input.npz \
+  --output outputs/fish/refined.npz \
   --config config/fusion_config.yaml
 
 python -m mesh_refinement evaluate \
-  --input outputs/demo/input.npz \
-  --refined outputs/demo/refined.npz \
-  --output outputs/demo/metrics.json
+  --input examples/axl2_fish/input.npz \
+  --refined outputs/fish/refined.npz \
+  --output outputs/fish/metrics.json
 ```
 
 The commands produce a refined NPZ and a JSON metric report. Choose fresh output
 paths when repeating a run; existing files are not overwritten.
+
+This example reduces 1,098 vertices to 274 while retaining all 544 faces.
+The original asset is by Quaternius (CC0); the AXL-derived data is included
+with its CC BY 4.0 attribution. See the [example source and license](examples/axl2_fish/README.md#source-and-license).
 
 ## Data Preparation
 
@@ -108,8 +112,9 @@ Use `--fusion mean` to compare uniform averaging with the same refinement pipeli
 ```text
 config/             YAML settings
 docs/               Usage, evaluation and testing reference
+examples/           Licensed real-mesh input with predictions and source credits
 mesh_refinement/    Refinement, fusion, metrics and CLI
-scripts/            Dataset conversion and synthetic demo
+scripts/            Dataset conversion
 tests/              Unit and CLI regression tests
 licenses/           Retained third-party licenses
 ```
@@ -123,7 +128,8 @@ licenses/           Retained third-party licenses
 | [Evaluation](docs/evaluation.md) | Metric definitions, pose sampling and reproduction scope |
 | [Testing](docs/testing.md) | Test commands, numerical checks and source provenance |
 
-Datasets and model predictions are not included. The package processes numeric
+Apart from the single licensed example, datasets and predictions are not included.
+The package processes numeric
 NPZ files; it does not run auto-rigging models or import/export FBX.
 
 ## Citation
@@ -143,4 +149,6 @@ The research pipeline builds on [Puppeteer](https://github.com/Seed3D/Puppeteer)
 with evaluation conventions based on [UniRig](https://github.com/VAST-AI-Research/UniRig).
 Neither project is a runtime dependency of this package.
 
-Released under [Apache 2.0](LICENSE). See [NOTICE.md](NOTICE.md) for attribution.
+Code is released under [Apache 2.0](LICENSE). The bundled example has its own
+[asset and dataset licenses](examples/axl2_fish/README.md#source-and-license).
+See [NOTICE.md](NOTICE.md) for attribution.

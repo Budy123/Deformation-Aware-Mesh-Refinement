@@ -53,7 +53,8 @@ unchanged UniRig coordinate-MSE training loss.
 
 The standalone package provides the main refinement, Mean fusion comparison,
 and the five metrics above. A [converter](data_preparation.md) reads the public
-RigNetv1/AXL 2.0 data. It does not bundle datasets, predictions,
+RigNetv1/AXL 2.0 data. Apart from the single licensed Fish1 example, it does not
+bundle datasets or predictions. It also does not include
 Ma et al./Blender baselines, shared-weight experiments, SO, OFPR or Local
-Skin L1/DE. It also has no no-partition ablation runner. The included synthetic
-demo checks the pipeline; it does not reproduce full-dataset averages.
+Skin L1/DE or a no-partition ablation runner. The included Fish1 example checks
+the pipeline; it does not reproduce full-dataset averages.

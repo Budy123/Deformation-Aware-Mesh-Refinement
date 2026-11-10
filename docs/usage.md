@@ -146,7 +146,6 @@ Both commands also accept `-h` / `--help`.
 | `evaluate` | `--pose-angle-deg FLOAT` | `30`, non-negative rotation-vector component bound. |
 | `evaluate` | `--seed INT` | `321`, non-negative base seed. |
 | `evaluate` | `--sample-index INT` | `0`, original evaluation ordinal. |
-| Demo script | `--output PATH` | Required new numeric NPZ. |
 
 ## Scope and limitations
 
