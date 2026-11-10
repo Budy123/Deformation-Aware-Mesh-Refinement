@@ -24,3 +24,6 @@ predictions/
 !examples/axl2_fish/mesh.obj
 !examples/axl2_fish/preview.png
 !examples/axl2_fish/provenance.json
+!examples/axl2_fish/comparison.gif
+!examples/axl2_fish/comparison.mp4
+!examples/axl2_fish/video_provenance.json

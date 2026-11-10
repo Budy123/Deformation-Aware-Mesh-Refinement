@@ -32,6 +32,16 @@ This CPU-only implementation takes a triangle mesh and existing skinning weights
 as input. No training or pretrained checkpoint is required. It provides KDE and
 Mean fusion, plus Skin L1, DE, FPR, CD and NME evaluation.
 
+## Skinning Comparison
+
+Puppeteer is run separately on the original and refined meshes with the same
+GT skeleton. Both predictions are animated with identical joint motion and camera.
+
+![Original and refined meshes with fresh Puppeteer skinning predictions](examples/axl2_fish/comparison.gif)
+
+[Watch/download MP4](examples/axl2_fish/comparison.mp4) ·
+[Protocol and source credits](examples/axl2_fish/README.md#fresh-inference-video)
+
 ## Installation
 
 Tested with Python 3.8.10, NumPy 1.24.4, SciPy 1.10.1 and PyYAML 6.0.3.

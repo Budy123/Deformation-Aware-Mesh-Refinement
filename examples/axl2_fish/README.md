@@ -13,6 +13,9 @@ downloading the dataset or running a prediction model.
 - `mesh.obj`: the same rest-pose geometry, for inspection in a mesh viewer.
 - `preview.png`: a rendering of that geometry, without source textures.
 - `provenance.json`: source links, conversion details and array hashes.
+- `comparison.gif` / `comparison.mp4`: original/refined mesh comparison with
+  fresh skinning predictions on each mesh.
+- `video_provenance.json`: inference settings, checkpoint hashes, motion and scores.
 
 Run from the repository root after installation:
 
@@ -31,6 +34,32 @@ The supplied predictions are unchanged; no noise was added to create an effect.
 Evaluation uses 64 poses, seed 321 and sample index 0 by default. It is not a
 claim to reproduce the paper's full dataset/pose aggregation.
 
+## Fresh inference video
+
+![Fresh Puppeteer predictions on the original and refined fish](comparison.gif)
+
+[Watch/download MP4](comparison.mp4)
+
+The video follows **original mesh → fresh Puppeteer prediction → refinement →
+fresh Puppeteer prediction on the refined mesh**. The right-hand result uses
+the new refined-mesh prediction, not the fused skinning weights. The GT skeleton
+is identical in both inference inputs; GT weights are used only for evaluation.
+
+Both inference runs use the same `puppeteer_skin_w_diverse_pose_depth1.pth`
+checkpoint, depth 1, seed 0, `max_joints=256`, batch size 1 and native post-filter.
+The displayed motion is one prescribed swim cycle, shared by both results;
+it is not an original animation clip or a pose selected by an error search.
+Full-mesh and tail views use common framing over all frames and both methods.
+The numeric NPZ's existing cached weights are unchanged and are not these new
+predictions. Native point sampling is stochastic, so a seed is not a promise
+of bitwise-identical reruns.
+
+For these fresh predictions, Skin L1 changes from 0.026602 to 0.026192, while
+64-pose DE changes from 0.008864 to 0.009937 (seed 321, sample index 0). The
+video illustrates the structural difference; it does not claim that every
+skinning/deformation metric improves after re-inference. Settings, hashes and
+unrounded scores are in [video_provenance.json](video_provenance.json).
+
 ## Source and license
 
 **Original asset:** Fish1 by **Quaternius**, from the
@@ -42,7 +71,7 @@ also available on the [author's original release](https://opengameart.org/conten
 **Dataset version and processing:** [Articulation-XL2.0](https://huggingface.co/datasets/Seed3D/Articulation-XL2.0),
 by the MagicArticulate/Puppeteer authors, published under
 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
-The numeric mesh/annotation derivative and preview in this directory retain
+The numeric mesh/annotation derivative, preview and comparison video retain
 that attribution and CC BY 4.0 notice; they are **not** relicensed as Apache 2.0.
 The original Quaternius asset remains CC0.
 

@@ -1,0 +1,122 @@
+{
+  "asset_sample_id": "c76bfca7-6e53-50d1-a0e9-ff7cd6690866",
+  "protocol": "Fresh original inference -> refinement of its prediction -> fresh inference on refined geometry. Fixed GT skeleton; no GT skin is passed to the predictor.",
+  "inference_code_commit": "29b462d761b0417e5110e809f5a1b794b17c20f3",
+  "release_commit": "c758fe69acd010d97316730e28cb749453b8062a",
+  "source_npz_sha256": "b41c7294e34500930ac74905f105582e4ca39595c3d8b9cf70fc90a0c96debb3",
+  "runtime_source_manifest_sha256": "425baa9c45ad388d8bf6f8b985f03565d451c7791ed5c53c764f8f35258fac53",
+  "predictor": {
+    "name": "Puppeteer",
+    "repository": "https://github.com/Seed3D/Puppeteer",
+    "checkpoint": "puppeteer_skin_w_diverse_pose_depth1.pth",
+    "checkpoints": [
+      {
+        "name": "puppeteer_skin_w_diverse_pose_depth1.pth",
+        "exists_at_configured_path": true,
+        "sha256": "75e36a7138b3fa859ce6e62699f3856ac231968e4a65c13810a7c45a8aacc1b2"
+      },
+      {
+        "name": "shapevae-256.ckpt",
+        "exists_at_configured_path": true,
+        "sha256": "0391b81c36240e8f766fedf4265df599884193a5ef65354525074b9a00887454"
+      },
+      {
+        "name": "model_objaverse.ckpt",
+        "exists_at_configured_path": false,
+        "sha256": null
+      }
+    ],
+    "seed": 0,
+    "depth": 1,
+    "max_joints": 256,
+    "batch_size": 1,
+    "num_workers": 0,
+    "post_filter": true,
+    "sampling_note": "Native Puppeteer point-cloud preprocessing uses stochastic sampling; fixed native seed does not promise bitwise repeatability."
+  },
+  "render": {
+    "renderer_commit": "06dfc0861b64c7f919c6d1d2cc0990672a486cf1",
+    "motion": "One prescribed 5-second sinusoidal swim cycle; Spine1/2/3/Tail local Z amplitudes 10/16/22/28 degrees; phase lag 0.55 radians. Not an original asset animation clip or a pose selected by error.",
+    "same_motion_and_camera": true,
+    "shared_bounds_across_methods_and_frames": true,
+    "refined_skin_source": "fresh Puppeteer inference, not fused original weights",
+    "frames": 80,
+    "fps": 16,
+    "video_size": [
+      1280,
+      768
+    ],
+    "source_comparison_sha256": "2ce1a7e13807136ec64c9defe26a9c8cb81ea0872a1d56bb1fdecc1555c7c4da",
+    "prediction_sha256": {
+      "original": "65bdfde5366df1f7510b6b7e6ee74b55fe7c06798c5c994dda860cd9953593e3",
+      "refined": "9199ea768f8a94688cf4f84471ad9ed624eff22a4c19cca2a6e419e497285b12"
+    },
+    "files": {
+      "comparison.mp4": {
+        "bytes": 331832,
+        "sha256": "34c00fee75267a70c1d7d52981271f4cb11a663235f42a872329504ca2de76bc"
+      },
+      "comparison.gif": {
+        "bytes": 1599215,
+        "sha256": "2e70a5a591684d3dbf322d8cafe95f5666ccaa6d4891b55efa171b21f6e5fc17"
+      },
+      "poster.png": {
+        "bytes": 93989,
+        "sha256": "eb12d88b61dca397b7cbaac48a12d3c5634d1292029f3016461e0c997879a2ed"
+      },
+      "motion.npz": {
+        "bytes": 3014,
+        "sha256": "66f57eb2ce210ba0df749005993732df697e1aaa5d4aa6469d1135cf5355426b"
+      }
+    }
+  },
+  "gif_duration_ms": 4800,
+  "metrics": {
+    "original": {
+      "vertex_count": 1098,
+      "face_count": 544,
+      "joint_count": 8,
+      "skin_valid_vertex_count": 1098,
+      "skin_l1": 0.026601770460560472,
+      "skin_l1_joint_sum": 0.21281416368448378,
+      "skin_l1_joint_sum_raw": 0.21281416451801055,
+      "fpr": 1.0,
+      "nme": 1098,
+      "cd": 0.0,
+      "cd_squared": 0.0,
+      "de": 0.008863867852356055,
+      "de_mse": 6.854136337625608e-05,
+      "cd_backend": "scipy_float64",
+      "de_valid_vertex_count": 1098,
+      "pose_count": 64,
+      "pose_angle_deg": 30.0,
+      "seed": 321,
+      "sample_index": 0,
+      "pose_base_seed": 321
+    },
+    "refined_reprediction": {
+      "vertex_count": 274,
+      "face_count": 544,
+      "joint_count": 8,
+      "skin_valid_vertex_count": 274,
+      "skin_l1": 0.026192151633200076,
+      "skin_l1_joint_sum": 0.2095372130656006,
+      "skin_l1_joint_sum_raw": 0.20953721283122653,
+      "fpr": 1.0,
+      "nme": 0,
+      "cd": 0.0,
+      "cd_squared": 0.0,
+      "de": 0.00993689570421017,
+      "de_mse": 9.114236904803527e-05,
+      "cd_backend": "scipy_float64",
+      "de_valid_vertex_count": 274,
+      "pose_count": 64,
+      "pose_angle_deg": 30.0,
+      "seed": 321,
+      "sample_index": 0,
+      "pose_base_seed": 321
+    }
+  },
+  "score_protocol": "64 poses, component bounds +/-30 degrees, seed 321, sample index 0. Per-method output vertices, as in the package evaluator.",
+  "claim_limit": "Single qualitative demo. Skin L1 slightly decreases, but DE increases; not a general improvement claim."
+}
