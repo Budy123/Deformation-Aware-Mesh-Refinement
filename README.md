@@ -36,6 +36,7 @@ Mean fusion, plus Skin L1, DE, FPR, CD and NME evaluation.
 
 Puppeteer is run separately on the original and refined meshes with the same
 GT skeleton. Both predictions are animated with identical joint motion and camera.
+A wireframe overlay shows triangle boundaries and surface separation.
 
 ![Original and refined meshes with fresh Puppeteer skinning predictions](examples/axl2_fish/comparison.gif)
 
