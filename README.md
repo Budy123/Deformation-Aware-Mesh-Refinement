@@ -40,9 +40,9 @@ This CPU-only implementation takes a triangle mesh and existing skinning weights
 as input. No training or pretrained checkpoint is required. It provides KDE and
 Mean fusion, plus Skin L1, DE, FPR, CD, NME, OFPR, Local Skin L1/DE and SO evaluation.
 
-## Mesh Comparison
+## Mesh Comparison with Animation
 
-Puppeteer is run separately on the original and refined meshes with the same
+Puppeteer skinning prediction is run separately on the original and refined meshes with the same
 GT skeleton. Both predictions are animated with identical joint motion and camera.
 A light wireframe overlay with backface culling shows triangle boundaries and surface separation.
 
