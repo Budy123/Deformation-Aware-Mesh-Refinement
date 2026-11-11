@@ -35,10 +35,18 @@
     "sampling_note": "Native Puppeteer point-cloud preprocessing uses stochastic sampling; fixed native seed does not promise bitwise repeatability."
   },
   "render": {
-    "renderer_commit": "ba6850f9075c47d17e924f3cdd3b6797a6f06fca",
+    "renderer_commit": "f5d754a7229d80bd2a63324af3f44ee06fdd251a",
     "motion": "One prescribed 5-second sinusoidal swim cycle; Spine1/2/3/Tail local Z amplitudes 10/16/22/28 degrees; phase lag 0.55 radians. Not an original asset animation clip or a pose selected by error.",
     "same_motion_and_camera": true,
     "shared_bounds_across_methods_and_frames": true,
+    "tail_detail": {
+      "mode": "full_mesh_viewport_crop",
+      "size": [
+        254,
+        240
+      ],
+      "tail_selection_used_only_for_framing": true
+    },
     "wireframe": {
       "surface_overlay": true,
       "face_color_scale": 0.7,
@@ -63,16 +71,16 @@
     },
     "files": {
       "comparison.mp4": {
-        "bytes": 503086,
-        "sha256": "6dbc455142f5ebd9f254f6f5b33570a0cc5a20f6f1f2b4ba2196f3f6ccc7af60"
+        "bytes": 520537,
+        "sha256": "0572331e991af8188da29660c7da184ca81149b2faa24f2be87e45a69aa46d47"
       },
       "comparison.gif": {
-        "bytes": 2161520,
-        "sha256": "a9116f550dfa2f7537406d8f74bba3b00ba17be02796dba2a0c40fdd2e174277"
+        "bytes": 2287024,
+        "sha256": "56116306c25a3e275aa322f3852f6ec4d7b53e2f4043b462036dbe34b44954d6"
       },
       "poster.png": {
-        "bytes": 144668,
-        "sha256": "5ee52394061f89b6368f6e3481f8da27cbd9c7287d104daed78772b9cb09f8c2"
+        "bytes": 148653,
+        "sha256": "4bff67044d888c833ec174fa3d04ff60e878b620b6dcf5658605e878e14b605d"
       },
       "motion.npz": {
         "bytes": 3014,
