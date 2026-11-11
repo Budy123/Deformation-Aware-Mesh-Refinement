@@ -4,45 +4,10 @@ Hyun Wook Kim, Sanglim Han, Hak Gu Kim — Chung-Ang University
 
 **Project page:** [Website](https://irislab.cau.ac.kr/Deformation-Aware-Mesh-Refinement/) · **Paper:** coming soon · **Video:** [Mesh comparison](https://irislab.cau.ac.kr/Deformation-Aware-Mesh-Refinement/static/videos/comparison.mp4)
 
-Official implementation. This repository contains the refinement code, a licensed
-mesh example, dataset conversion scripts, and evaluation tools.
-
-## Overview
-
-Duplicate vertices in rigged meshes can receive different skinning weights and
-separate during deformation. Our method combines surface orientation partitioning,
-density-weighted skinning fusion and vertex merging to refine these duplicates
-without relocating vertices or modifying the skeleton.
-
-<details>
-<summary>Why refine duplicate vertices?</summary>
-
-![Coincident duplicate vertices separating during pose deformation](docs/assets/observations.png)
-
-Duplicate vertices can coincide in the rest pose (a), yet separate after
-deformation (b) when their skinning weights differ.
-
-</details>
-
-![Refinement pipeline: grouping, surface orientation partitioning, density-weighted skinning fusion, merging and face removal](docs/assets/pipeline.png)
-
-*Refinement pipeline from the paper. Surface orientation partitioning preserves
-opposite-facing layers before skinning weights are fused and vertices are merged.*
-
-This CPU-only implementation takes a triangle mesh and existing skinning weights
-as input. No training or pretrained checkpoint is required. It provides KDE and
-Mean fusion, plus Skin L1, DE, FPR, CD, NME, OFPR, Local Skin L1/DE and SO evaluation.
-
-## Mesh Comparison with Animation
-
-Puppeteer skinning prediction is run separately on the original and refined meshes with the same
-GT skeleton. Both predictions are animated with identical joint motion and camera.
-A light wireframe overlay with backface culling shows triangle boundaries and surface separation.
-
-![Original and refined meshes with fresh Puppeteer skinning predictions](examples/axl2_fish/comparison.gif)
-
-[Watch/download MP4](examples/axl2_fish/comparison.mp4) ·
-[Protocol and source credits](examples/axl2_fish/README.md#fresh-inference-video)
+Official implementation. This CPU-only package refines a triangle mesh using
+existing skinning weights. It supports KDE and Mean fusion, dataset conversion,
+and evaluation. No training or pretrained checkpoint is required; automatic
+rigging models are not included.
 
 ## Installation
 
