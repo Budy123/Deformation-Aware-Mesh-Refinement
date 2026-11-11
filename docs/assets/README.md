@@ -9,6 +9,6 @@ These figures are reproduced from the manuscript
 The author supplied the PDFs for use in this repository. The PNGs are rendered
 at 2,400 pixels wide on a white background, without cropping or changing content.
 
-The software's Apache 2.0 license does not grant rights to these paper figures
+The software's MIT License does not grant rights to these paper figures
 or the third-party assets depicted in them. Third-party assets retain their
 respective rights.

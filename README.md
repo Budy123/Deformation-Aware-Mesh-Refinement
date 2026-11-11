@@ -198,7 +198,8 @@ The research pipeline builds on [Puppeteer](https://github.com/Seed3D/Puppeteer)
 with evaluation conventions based on [UniRig](https://github.com/VAST-AI-Research/UniRig).
 Neither project is a runtime dependency of this package.
 
-Code is released under [Apache 2.0](LICENSE). [Paper figures](docs/assets/README.md)
+New code and modifications are released under [MIT](LICENSE), with existing
+third-party licenses retained. [Paper figures](docs/assets/README.md)
 are separate from the software license. The bundled example has its own
 [asset and dataset licenses](examples/axl2_fish/README.md#source-and-license).
 See [NOTICE.md](NOTICE.md) for attribution.

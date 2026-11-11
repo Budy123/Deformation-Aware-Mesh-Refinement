@@ -75,7 +75,7 @@ also available on the [author's original release](https://opengameart.org/conten
 by the MagicArticulate/Puppeteer authors, published under
 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 The numeric mesh/annotation derivative, preview and comparison video retain
-that attribution and CC BY 4.0 notice; they are **not** relicensed as Apache 2.0.
+that attribution and CC BY 4.0 notice; they are **not** covered by the code's MIT License.
 The original Quaternius asset remains CC0.
 
 Dataset sample ID: `c76bfca7-6e53-50d1-a0e9-ff7cd6690866` (main training split).

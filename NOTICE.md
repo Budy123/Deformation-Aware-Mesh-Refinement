@@ -3,9 +3,10 @@
 Copyright 2026 Budy123 (new code and modifications).
 
 This repository provides mesh-refinement paper code; it is not an official
-Puppeteer or UniRig release. The code is provided under the Apache License,
-Version 2.0 in `LICENSE`, as selected by the repository owner. Existing
-third-party attribution and license notices are retained.
+Puppeteer or UniRig release. New code and modifications are provided under
+the MIT License in `LICENSE`, as selected by the repository owner. Portions
+derived from Apache-licensed code remain subject to the Apache License,
+Version 2.0. Existing third-party attribution and license notices are retained.
 
 Production source provenance is recorded in `docs/source_provenance.json`. Topology
 and fusion were separated from the existing Puppeteer-based research tree;
@@ -25,5 +26,5 @@ training loss. UniRig model code, weights and datasets are not bundled.
 The single example under examples/axl2_fish/ uses Quaternius Fish1 (CC0 1.0)
 via Articulation-XL2.0 (CC BY 4.0), with cached Puppeteer predictions. Its numeric
 derivative and preview retain CC BY 4.0 attribution, separately from this
-repository's Apache-licensed code. See examples/axl2_fish/README.md for source
+repository's MIT License. See examples/axl2_fish/README.md for source
 credits, license links and modifications. Full datasets are not bundled.
