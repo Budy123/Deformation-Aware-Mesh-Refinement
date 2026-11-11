@@ -35,16 +35,19 @@
     "sampling_note": "Native Puppeteer point-cloud preprocessing uses stochastic sampling; fixed native seed does not promise bitwise repeatability."
   },
   "render": {
-    "renderer_commit": "f5d754a7229d80bd2a63324af3f44ee06fdd251a",
+    "renderer_commit": "0ddab5e5b4344e4d2195038560e091b85b2914f3",
     "motion": "One prescribed 5-second sinusoidal swim cycle; Spine1/2/3/Tail local Z amplitudes 10/16/22/28 degrees; phase lag 0.55 radians. Not an original asset animation clip or a pose selected by error.",
     "same_motion_and_camera": true,
     "shared_bounds_across_methods_and_frames": true,
     "tail_detail": {
       "mode": "full_mesh_viewport_crop",
       "size": [
-        254,
-        240
+        900,
+        800
       ],
+      "magnification_vs_whole": 2.2716763005780347,
+      "caption": "Tail",
+      "caption_position": "below_each_detail",
       "tail_selection_used_only_for_framing": true
     },
     "wireframe": {
@@ -61,9 +64,14 @@
     "frames": 80,
     "fps": 16,
     "video_size": [
-      1280,
-      768
+      1920,
+      1440
     ],
+    "gif_size": [
+      1600,
+      1200
+    ],
+    "gif_colors": 128,
     "source_comparison_sha256": "2ce1a7e13807136ec64c9defe26a9c8cb81ea0872a1d56bb1fdecc1555c7c4da",
     "prediction_sha256": {
       "original": "65bdfde5366df1f7510b6b7e6ee74b55fe7c06798c5c994dda860cd9953593e3",
@@ -71,16 +79,16 @@
     },
     "files": {
       "comparison.mp4": {
-        "bytes": 520537,
-        "sha256": "0572331e991af8188da29660c7da184ca81149b2faa24f2be87e45a69aa46d47"
+        "bytes": 1477470,
+        "sha256": "a1789353e51a95ac02bee7627549e28a424e94011669916d70aa1bdf3b09a404"
       },
       "comparison.gif": {
-        "bytes": 2287024,
-        "sha256": "56116306c25a3e275aa322f3852f6ec4d7b53e2f4043b462036dbe34b44954d6"
+        "bytes": 7109495,
+        "sha256": "6f336427aafd1ac39492afe5c9008770686d0dade96197f629423d81e719c142"
       },
       "poster.png": {
-        "bytes": 148653,
-        "sha256": "4bff67044d888c833ec174fa3d04ff60e878b620b6dcf5658605e878e14b605d"
+        "bytes": 346631,
+        "sha256": "dd99f73cb6c43d3d9c47347d680fe4c7490150320cf8c19ae001c4b0d12e5db0"
       },
       "motion.npz": {
         "bytes": 3014,

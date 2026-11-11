@@ -51,6 +51,8 @@ The displayed motion is one prescribed swim cycle, shared by both results;
 it is not an original animation clip or a pose selected by an error search.
 Full-mesh and tail views use common framing over all frames and both methods.
 The tail detail crops the rendered full mesh; no faces are removed for the zoom.
+The GIF is 1,600 x 1,200 pixels and the MP4 is 1,920 x 1,440 pixels, with the
+tail shown at approximately twice its scale in the full view.
 Light wireframe edges are drawn over front-facing triangles to show triangle
 boundaries and separation. Predictions, motion and camera are unchanged.
 The numeric NPZ's existing cached weights are unchanged and are not these new
