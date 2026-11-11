@@ -50,6 +50,18 @@ This example reduces 1,098 vertices to 274 while retaining all 544 faces.
 The original asset is by Quaternius (CC0); the AXL-derived data is included
 with its CC BY 4.0 attribution. See the [example source and license](examples/axl2_fish/README.md#source-and-license).
 
+<details>
+<summary>Animated comparison of the bundled example</summary>
+
+![Original and refined Fish1 meshes animated with Puppeteer predictions](examples/axl2_fish/comparison.gif)
+
+The animation uses separate Puppeteer predictions on the original and refined
+meshes with the same GT skeleton and joint motion. The quick-start commands
+above use the supplied weights; they do not run Puppeteer inference.
+See the [animation protocol](examples/axl2_fish/README.md#fresh-inference-video).
+
+</details>
+
 ## Data Preparation
 
 Download the datasets from their official releases:
