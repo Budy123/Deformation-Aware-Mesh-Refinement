@@ -1,18 +1,11 @@
-<div align="center">
+# Deformation-Aware Mesh Refinement for Robust Automatic Rigging
 
-<h1>Deformation-Aware Mesh Refinement<br>for Robust Automatic Rigging</h1>
+Hyun Wook Kim, Sanglim Han, Hak Gu Kim — Chung-Ang University
 
-<p><strong>Hyun Wook Kim · Sanglim Han · Hak Gu Kim</strong><br>Chung-Ang University</p>
+**Project page:** [Website](https://irislab.cau.ac.kr/Deformation-Aware-Mesh-Refinement/) · **Paper:** coming soon · **Video:** [Mesh comparison](https://irislab.cau.ac.kr/Deformation-Aware-Mesh-Refinement/static/videos/comparison.mp4)
 
-<p>
-  <a href="#overview">Overview</a> ·
-  <a href="#installation">Installation</a> ·
-  <a href="#quick-start">Quick Start</a> ·
-  <a href="#data-preparation">Data Preparation</a> ·
-  <a href="#documentation">Documentation</a>
-</p>
-
-</div>
+Official implementation. This repository contains the refinement code, a licensed
+mesh example, dataset conversion scripts, and evaluation tools.
 
 ## Overview
 
